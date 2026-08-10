@@ -53,6 +53,8 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Game\RoomManager.cs" />
+    <Compile Include="Game\MatchModels.cs" />
+    <Compile Include="Game\MatchRepository.cs" />
     <Compile Include="Game\SudokuGenerator.cs" />
     <Compile Include="Game\MatchManager.cs" />
     <Compile Include="Network\ClientHandler.cs" />
