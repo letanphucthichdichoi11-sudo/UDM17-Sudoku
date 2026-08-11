@@ -244,7 +244,112 @@ namespace Sudoku.Server.Game
         private Match GetRequiredMatch(Guid id) { Match match; if (!_matches.TryGetValue(id, out match)) throw new KeyNotFoundException("Match not found."); return match; }
         private static SpectatorMatchSnapshot CreateSpectatorSnapshot(Match match, DateTime now) { return new SpectatorMatchSnapshot { MatchId = match.MatchId, OriginalPuzzle = MatchGrid.Clone(match.OriginalPuzzle), BoardA = MatchGrid.Clone(match.BoardA.CurrentValues), BoardB = MatchGrid.Clone(match.BoardB.CurrentValues), CorrectCountA = match.BoardA.CorrectCount, CorrectCountB = match.BoardB.CorrectCount, ErrorCountA = match.BoardA.ErrorCount, ErrorCountB = match.BoardB.ErrorCount, TimeLeft = GetTimeLeft(match, now) }; }
         private void ArchiveFinishedMatch(Match match) { lock (match.SyncRoot) { if (match.State == MatchState.Archived) return; var aborted = match.State == MatchState.Aborted; match.State = MatchState.Archived; _repository.SaveMatch(match); if (aborted) OnMatchAborted(match); else OnMatchFinished(match); } OnMatchArchived(match); }
-        private static void ValidateStartArguments(Guid roomId, Guid matchId, string a, string b, int[,] puzzle, int[,] solution, TimeSpan limit) { if (roomId == Guid.Empty || matchId == Guid.Empty || String.IsNullOrWhiteSpace(a) || String.IsNullOrWhiteSpace(b) || a == b || puzzle == null || solution == null || puzzle.GetLength(0) != 9 || puzzle.GetLength(1) != 9 || solution.GetLength(0) != 9 || solution.GetLength(1) != 9 || limit <= TimeSpan.Zero) throw new ArgumentException("StartMatch arguments are invalid."); }
+        private static void ValidateStartArguments(
+            Guid roomId,
+            Guid matchId,
+            string playerAId,
+            string playerBId,
+            int[,] puzzle,
+            int[,] solution,
+            TimeSpan timeLimit)
+        {
+            if (roomId == Guid.Empty ||
+                matchId == Guid.Empty ||
+                String.IsNullOrWhiteSpace(playerAId) ||
+                String.IsNullOrWhiteSpace(playerBId) ||
+                playerAId == playerBId ||
+                timeLimit <= TimeSpan.Zero)
+            {
+                throw new ArgumentException("StartMatch arguments are invalid.");
+            }
+
+            ValidateGrid(puzzle, "puzzle");
+            ValidateGrid(solution, "solution");
+
+            bool hasEmptyCell = false;
+            for (int row = 0; row < 9; row++)
+            for (int col = 0; col < 9; col++)
+            {
+                int puzzleValue = puzzle[row, col];
+                int solutionValue = solution[row, col];
+
+                if (puzzleValue < 0 || puzzleValue > 9 ||
+                    solutionValue < 1 || solutionValue > 9)
+                {
+                    throw new ArgumentException(
+                        "Puzzle or solution contains an invalid value.");
+                }
+
+                if (puzzleValue == 0)
+                {
+                    hasEmptyCell = true;
+                }
+                else if (puzzleValue != solutionValue)
+                {
+                    throw new ArgumentException(
+                        "Puzzle clues must match the solution.");
+                }
+            }
+
+            if (!hasEmptyCell)
+                throw new ArgumentException("Puzzle must contain an empty cell.");
+
+            if (!IsValidCompleteGrid(solution))
+                throw new ArgumentException("Solution grid is invalid.");
+        }
+
+        private static void ValidateGrid(int[,] grid, string parameterName)
+        {
+            if (grid == null ||
+                grid.GetLength(0) != 9 ||
+                grid.GetLength(1) != 9)
+            {
+                throw new ArgumentException(
+                    "Sudoku grid must be a 9x9 matrix.",
+                    parameterName);
+            }
+        }
+
+        private static bool IsValidCompleteGrid(int[,] grid)
+        {
+            for (int index = 0; index < 9; index++)
+            {
+                var rowValues = new bool[10];
+                var columnValues = new bool[10];
+
+                for (int offset = 0; offset < 9; offset++)
+                {
+                    int rowValue = grid[index, offset];
+                    int columnValue = grid[offset, index];
+
+                    if (rowValues[rowValue] || columnValues[columnValue])
+                        return false;
+
+                    rowValues[rowValue] = true;
+                    columnValues[columnValue] = true;
+                }
+            }
+
+            for (int boxRow = 0; boxRow < 3; boxRow++)
+            for (int boxCol = 0; boxCol < 3; boxCol++)
+            {
+                var boxValues = new bool[10];
+                for (int rowOffset = 0; rowOffset < 3; rowOffset++)
+                for (int colOffset = 0; colOffset < 3; colOffset++)
+                {
+                    int value = grid[
+                        boxRow * 3 + rowOffset,
+                        boxCol * 3 + colOffset];
+
+                    if (boxValues[value])
+                        return false;
+
+                    boxValues[value] = true;
+                }
+            }
+
+            return true;
+        }
         private void OnMatchStarted(Match m) { var h = MatchStarted; if (h != null) h(this, new MatchEventArgs(m)); }
         private void OnPlayerProgressChanged(Match m, string p, MoveResult r) { var h = PlayerProgressChanged; if (h != null) h(this, new MatchMoveEventArgs(m, p, r)); }
         private void OnSpectatorBoardChanged(Match m, string p, MoveResult r) { var h = SpectatorBoardChanged; if (h != null) h(this, new MatchMoveEventArgs(m, p, r)); }
