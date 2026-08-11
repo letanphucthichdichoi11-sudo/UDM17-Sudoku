@@ -1,12 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Sudoku.Shared.Models
 {
-    internal class Room
+    public class Room
     {
+        public string RoomId { get; set; }
+
+        public string RoomName { get; set; }
+
+        public int MaxPlayers { get; set; }
+
+        public List<Player> Players { get; set; }
+
+        public Room(
+            string roomId,
+            string roomName,
+            int maxPlayers = 2)
+        {
+            RoomId = roomId;
+            RoomName = roomName;
+            MaxPlayers = maxPlayers;
+            Players = new List<Player>();
+        }
     }
 }
