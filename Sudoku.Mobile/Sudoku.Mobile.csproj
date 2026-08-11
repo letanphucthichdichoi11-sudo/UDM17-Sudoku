@@ -71,10 +71,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Network\" />
 	  <Folder Include="Services\" />
 	  <Folder Include="ViewModels\" />
-	  <Folder Include="Models\" />
 	  <Folder Include="Views\" />
 	</ItemGroup>
 
