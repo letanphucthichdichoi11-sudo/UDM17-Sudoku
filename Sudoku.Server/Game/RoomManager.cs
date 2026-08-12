@@ -5,7 +5,7 @@ using Sudoku.Shared.Models;
 
 namespace Sudoku.Server.Game
 {
-    internal class RoomManager
+    internal sealed class RoomManager : IRoomManager
     {
         private readonly ConcurrentDictionary<Guid, Room> _rooms;
 

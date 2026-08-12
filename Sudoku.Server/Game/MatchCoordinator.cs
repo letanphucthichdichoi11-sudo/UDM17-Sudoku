@@ -6,15 +6,15 @@ namespace Sudoku.Server.Game
 {
     internal sealed class MatchCoordinator
     {
-        private readonly SudokuGenerator _sudokuGenerator;
-        private readonly RoomManager _roomManager;
-        private readonly MatchManager _matchManager;
+        private readonly ISudokuGenerator _sudokuGenerator;
+        private readonly IRoomManager _roomManager;
+        private readonly IMatchManager _matchManager;
         private readonly object _startLock = new object();
 
         public MatchCoordinator(
-            SudokuGenerator sudokuGenerator,
-            RoomManager roomManager,
-            MatchManager matchManager)
+            ISudokuGenerator sudokuGenerator,
+            IRoomManager roomManager,
+            IMatchManager matchManager)
         {
             _sudokuGenerator = sudokuGenerator ??
                 throw new ArgumentNullException("sudokuGenerator");
@@ -45,7 +45,7 @@ namespace Sudoku.Server.Game
 
             lock (_startLock)
             {
-                Room room = _roomManager.GetRoom(Guid.Parse(roomId));
+                Room room = _roomManager.GetRoom(parsedRoomId);
                 if (room == null)
                     throw new InvalidOperationException("Room was not found.");
 

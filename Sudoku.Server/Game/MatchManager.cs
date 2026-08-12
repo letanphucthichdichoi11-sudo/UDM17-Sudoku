@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Sudoku.Server.Game
 {
-    internal sealed class MatchManager
+    internal sealed class MatchManager : IMatchManager
     {
         private static readonly TimeSpan DisconnectGracePeriod = TimeSpan.FromMinutes(3);
         private readonly ConcurrentDictionary<Guid, Match> _matches = new ConcurrentDictionary<Guid, Match>();
@@ -263,92 +263,7 @@ namespace Sudoku.Server.Game
                 throw new ArgumentException("StartMatch arguments are invalid.");
             }
 
-            ValidateGrid(puzzle, "puzzle");
-            ValidateGrid(solution, "solution");
-
-            bool hasEmptyCell = false;
-            for (int row = 0; row < 9; row++)
-            for (int col = 0; col < 9; col++)
-            {
-                int puzzleValue = puzzle[row, col];
-                int solutionValue = solution[row, col];
-
-                if (puzzleValue < 0 || puzzleValue > 9 ||
-                    solutionValue < 1 || solutionValue > 9)
-                {
-                    throw new ArgumentException(
-                        "Puzzle or solution contains an invalid value.");
-                }
-
-                if (puzzleValue == 0)
-                {
-                    hasEmptyCell = true;
-                }
-                else if (puzzleValue != solutionValue)
-                {
-                    throw new ArgumentException(
-                        "Puzzle clues must match the solution.");
-                }
-            }
-
-            if (!hasEmptyCell)
-                throw new ArgumentException("Puzzle must contain an empty cell.");
-
-            if (!IsValidCompleteGrid(solution))
-                throw new ArgumentException("Solution grid is invalid.");
-        }
-
-        private static void ValidateGrid(int[,] grid, string parameterName)
-        {
-            if (grid == null ||
-                grid.GetLength(0) != 9 ||
-                grid.GetLength(1) != 9)
-            {
-                throw new ArgumentException(
-                    "Sudoku grid must be a 9x9 matrix.",
-                    parameterName);
-            }
-        }
-
-        private static bool IsValidCompleteGrid(int[,] grid)
-        {
-            for (int index = 0; index < 9; index++)
-            {
-                var rowValues = new bool[10];
-                var columnValues = new bool[10];
-
-                for (int offset = 0; offset < 9; offset++)
-                {
-                    int rowValue = grid[index, offset];
-                    int columnValue = grid[offset, index];
-
-                    if (rowValues[rowValue] || columnValues[columnValue])
-                        return false;
-
-                    rowValues[rowValue] = true;
-                    columnValues[columnValue] = true;
-                }
-            }
-
-            for (int boxRow = 0; boxRow < 3; boxRow++)
-            for (int boxCol = 0; boxCol < 3; boxCol++)
-            {
-                var boxValues = new bool[10];
-                for (int rowOffset = 0; rowOffset < 3; rowOffset++)
-                for (int colOffset = 0; colOffset < 3; colOffset++)
-                {
-                    int value = grid[
-                        boxRow * 3 + rowOffset,
-                        boxCol * 3 + colOffset];
-
-                    if (boxValues[value])
-                        return false;
-
-                    boxValues[value] = true;
-                }
-            }
-
-            return true;
+            SudokuGridValidator.ValidatePuzzleAndSolution(puzzle, solution);
         }
         private void OnMatchStarted(Match m) { var h = MatchStarted; if (h != null) h(this, new MatchEventArgs(m)); }
         private void OnPlayerProgressChanged(Match m, string p, MoveResult r) { var h = PlayerProgressChanged; if (h != null) h(this, new MatchMoveEventArgs(m, p, r)); }
