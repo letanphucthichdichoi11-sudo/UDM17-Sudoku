@@ -3,5 +3,6 @@
     <Deploy Solution="Debug|*" />
   </Project>
   <Project Path="Sudoku.Server/Sudoku.Server.csproj" Id="dcd1154f-c08d-4ae6-b857-5b48f108cf36" />
+  <Project Path="Sudoku.Server.Tests/Sudoku.Server.Tests.csproj" />
   <Project Path="Sudoku.Shared/Sudoku.Shared.csproj" Id="98981190-f3ef-4ac7-b963-df76cbe47009" />
 </Solution>
