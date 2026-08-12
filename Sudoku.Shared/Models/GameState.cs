@@ -1,5 +1,5 @@
-﻿using System;
-        
+using System;
+
 namespace Sudoku.Shared.Models
 {
     public class GameState
@@ -7,9 +7,9 @@ namespace Sudoku.Shared.Models
         // ID của trận đấu
         public Guid MatchId { get; set; }
 
-        // Bàn Sudoku hiện tại
+        // Bàn Sudoku hiện tại (Dùng int[][] thay cho int[,] để hỗ trợ JSON)
         // 0 = ô chưa có số
-        public int[,] Board { get; set; }
+        public int[][] Board { get; set; }
 
         // Người chơi đang thực hiện lượt
         public Guid CurrentPlayerId { get; set; }
@@ -21,9 +21,15 @@ namespace Sudoku.Shared.Models
         public GameState()
         {
             MatchId = Guid.NewGuid();
-            Board = new int[9, 9];
             CurrentPlayerId = Guid.Empty;
             Status = GameStatus.Waiting;
+
+            // Khởi tạo mảng Jagged 9x9 chuẩn
+            Board = new int[9][];
+            for (int i = 0; i < 9; i++)
+            {
+                Board[i] = new int[9];
+            }
         }
     }
 
