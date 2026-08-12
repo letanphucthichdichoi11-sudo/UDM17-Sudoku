@@ -45,7 +45,7 @@ namespace Sudoku.Server.Game
 
             lock (_startLock)
             {
-                Room room = _roomManager.GetRoom(roomId);
+                Room room = _roomManager.GetRoom(Guid.Parse(roomId));
                 if (room == null)
                     throw new InvalidOperationException("Room was not found.");
 

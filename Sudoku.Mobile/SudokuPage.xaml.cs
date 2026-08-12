@@ -1,169 +1,218 @@
-using Sudoku.Server.Game;
+using System;
+using Microsoft.Maui.Controls;
 
-namespace Sudoku.Mobile;
-
-public partial class SudokuPage : ContentPage
+namespace Sudoku.Mobile
 {
-    private int[,] _puzzle = new int[9, 9];
-
-private Button? _selectedCell;
-
-    public SudokuPage()
+    public partial class SudokuPage : ContentPage
     {
-        InitializeComponent();
+        private readonly int[,] _puzzle = new int[9, 9];
+        private readonly int[,] _solution = new int[9, 9];
 
-        GenerateSudoku();
-    }
+        private Button? _selectedCell;
 
-    private void GenerateSudoku()
-    {
-        SudokuGenerator generator = new SudokuGenerator();
-
-        // Tạo đề Sudoku.
-        // 40 ô sẽ được xóa thành ô trống.
-        _puzzle = generator.GeneratePuzzle(40);
-
-        CreateSudokuBoard();
-    }
-
-    private void CreateSudokuBoard()
-    {
-        SudokuGrid.Children.Clear();
-
-        for (int row = 0; row < 9; row++)
+        public SudokuPage()
         {
-            for (int col = 0; col < 9; col++)
+            InitializeComponent();
+
+            GenerateSudoku();
+        }
+
+        private void GenerateSudoku()
+        {
+            GenerateSolvedBoard();
+
+            // Copy lời giải sang puzzle
+            Array.Copy(_solution, _puzzle, _solution.Length);
+
+            // Xóa khoảng 40 ô để tạo đề
+            Random random = new Random();
+
+            int removed = 0;
+
+            while (removed < 40)
             {
-                int value = _puzzle[row, col];
+                int row = random.Next(0, 9);
+                int col = random.Next(0, 9);
 
-                Button cell = new Button
+                if (_puzzle[row, col] != 0)
                 {
-                    FontSize = 20,
-                    Padding = 0,
-                    CornerRadius = 0,
-                    BorderWidth = 0
-                };
-
-                Grid.SetRow(cell, row);
-                Grid.SetColumn(cell, col);
-
-                // ==========================
-                // Ô CÓ SỐ SẴN
-                // ==========================
-
-                if (value != 0)
-                {
-                    cell.Text = value.ToString();
-
-                    cell.IsEnabled = false;
-
-                    cell.BackgroundColor =
-                        Color.FromArgb("#E5E7EB");
-
-                    cell.TextColor =
-                        Color.FromArgb("#111827");
+                    _puzzle[row, col] = 0;
+                    removed++;
                 }
+            }
 
-                // ==========================
-                // Ô TRỐNG
-                // ==========================
+            UpdateBoard();
+        }
 
-                else
+        private void GenerateSolvedBoard()
+        {
+            // Xóa bảng
+            for (int row = 0; row < 9; row++)
+            {
+                for (int col = 0; col < 9; col++)
                 {
-                    cell.Text = "";
-
-                    cell.IsEnabled = true;
-
-                    cell.BackgroundColor = Colors.White;
-
-                    cell.TextColor =
-                        Color.FromArgb("#2563EB");
-
-                    cell.Clicked += Cell_Clicked;
+                    _solution[row, col] = 0;
                 }
+            }
 
-                SudokuGrid.Add(cell);
+            FillBoard(_solution);
+        }
+
+        private bool FillBoard(int[,] board)
+        {
+            for (int row = 0; row < 9; row++)
+            {
+                for (int col = 0; col < 9; col++)
+                {
+                    if (board[row, col] != 0)
+                        continue;
+
+                    int[] numbers =
+                    {
+                        1, 2, 3, 4, 5,
+                        6, 7, 8, 9
+                    };
+
+                    Shuffle(numbers);
+
+                    foreach (int number in numbers)
+                    {
+                        if (IsValid(board, row, col, number))
+                        {
+                            board[row, col] = number;
+
+                            if (FillBoard(board))
+                                return true;
+
+                            board[row, col] = 0;
+                        }
+                    }
+
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool IsValid(
+            int[,] board,
+            int row,
+            int col,
+            int number)
+        {
+            // Kiểm tra hàng
+            for (int c = 0; c < 9; c++)
+            {
+                if (board[row, c] == number)
+                    return false;
+            }
+
+            // Kiểm tra cột
+            for (int r = 0; r < 9; r++)
+            {
+                if (board[r, col] == number)
+                    return false;
+            }
+
+            // Kiểm tra ô 3x3
+            int startRow = row / 3 * 3;
+            int startCol = col / 3 * 3;
+
+            for (int r = startRow; r < startRow + 3; r++)
+            {
+                for (int c = startCol; c < startCol + 3; c++)
+                {
+                    if (board[r, c] == number)
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        private void Shuffle(int[] numbers)
+        {
+            Random random = new Random();
+
+            for (int i = numbers.Length - 1; i > 0; i--)
+            {
+                int j = random.Next(i + 1);
+
+                int temp = numbers[i];
+                numbers[i] = numbers[j];
+                numbers[j] = temp;
             }
         }
-    }
 
-    // ==========================
-    // CHỌN Ô
-    // ==========================
-
-    private void Cell_Clicked(object? sender, EventArgs e)
-    {
-        if (sender is not Button cell)
-            return;
-
-        // Bỏ highlight ô trước đó
-        if (_selectedCell != null)
+        private void UpdateBoard()
         {
-            _selectedCell.BackgroundColor = Colors.White;
+            for (int row = 0; row < 9; row++)
+            {
+                for (int col = 0; col < 9; col++)
+                {
+                    Button button = GetCellButton(row, col);
+
+                    int value = _puzzle[row, col];
+
+                    if (value == 0)
+                    {
+                        button.Text = "";
+                    }
+                    else
+                    {
+                        button.Text = value.ToString();
+                    }
+
+                    // Ô đề bài không được sửa
+                    button.IsEnabled = value == 0;
+                }
+            }
         }
 
-        _selectedCell = cell;
-
-        // Highlight ô đang chọn
-        _selectedCell.BackgroundColor =
-            Color.FromArgb("#DBEAFE");
-    }
-
-    // ==========================
-    // NHẬP SỐ
-    // ==========================
-
-    private void Number_Clicked(object? sender, EventArgs e)
-    {
-        if (_selectedCell == null)
+        private Button GetCellButton(int row, int col)
         {
-            DisplayAlert(
-                "Thông báo",
-                "Hãy chọn một ô trống.",
-                "OK");
-
-            return;
+            return (Button)SudokuGrid.Children[
+                row * 9 + col
+            ];
         }
 
-        if (sender is not Button numberButton)
-            return;
+        private void OnCellClicked(object sender, EventArgs e)
+        {
+            if (sender is not Button button)
+                return;
 
-        _selectedCell.Text = numberButton.Text;
+            _selectedCell = button;
+        }
 
-        _selectedCell.TextColor =
-            Color.FromArgb("#2563EB");
+        private void OnNumberClicked(object sender, EventArgs e)
+        {
+            if (_selectedCell == null)
+                return;
 
-        _selectedCell.BackgroundColor =
-            Color.FromArgb("#DBEAFE");
+            if (sender is not Button button)
+                return;
+
+            _selectedCell.Text = button.Text;
+        }
+
+        private void OnClearClicked(object sender, EventArgs e)
+        {
+            if (_selectedCell == null)
+                return;
+
+            _selectedCell.Text = "";
+        }
+
+        private async void OnNewGameClicked(object sender, EventArgs e)
+        {
+            GenerateSudoku();
+
+            await DisplayAlert(
+                "Sudoku",
+                "Đã tạo ván mới!",
+                "OK"
+            );
+        }
     }
-
-    // ==========================
-    // XÓA SỐ
-    // ==========================
-
-    private void Clear_Clicked(object? sender, EventArgs e)
-    {
-        if (_selectedCell == null)
-            return;
-
-        _selectedCell.Text = "";
-
-        _selectedCell.BackgroundColor = Colors.White;
-    }
-
-    // ==========================
-    // SUBMIT
-    // ==========================
-
-    private async void SubmitButton_Clicked(
-        object? sender,
-        EventArgs e)
-    {
-        await DisplayAlert(
-            "Sudoku",
-            "Đã gửi bài.",
-            "OK");
-    }
-
-
 }

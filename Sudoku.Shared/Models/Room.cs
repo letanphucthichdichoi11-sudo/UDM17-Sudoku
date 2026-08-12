@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Sudoku.Shared.Models
 {
     public class Room
     {
-        public string RoomId { get; set; }
+        public Guid RoomId { get; set; }
 
         public string RoomName { get; set; }
 
@@ -13,7 +14,7 @@ namespace Sudoku.Shared.Models
         public List<Player> Players { get; set; }
 
         public Room(
-            string roomId,
+            Guid roomId,
             string roomName,
             int maxPlayers = 2)
         {
