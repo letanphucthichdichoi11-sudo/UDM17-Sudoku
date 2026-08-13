@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Sudoku.Mobile.Views.LobbyPage"
+    Title="Lobby"
+    BackgroundColor="#F5F6FA">
+
+    <Grid RowDefinitions="Auto,*,Auto"
+          Padding="20">
+
+        <!-- HEADER -->
+        <VerticalStackLayout Grid.Row="0"
+                             Spacing="5"
+                             Margin="0,10,0,20">
+
+            <Label Text="Sudoku Lobby"
+                   FontSize="30"
+                   FontAttributes="Bold"
+                   TextColor="#222222" />
+
+            <Label Text="Chọn phòng để bắt đầu trận đấu"
+                   FontSize="15"
+                   TextColor="#777777" />
+
+        </VerticalStackLayout>
+
+
+        <!-- DANH SÁCH ROOM -->
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Rooms}"
+                        SelectionMode="None">
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout
+                    VerticalOptions="Center"
+                    HorizontalOptions="Center"
+                    Spacing="10">
+
+                    <Label Text="Chưa có phòng nào"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           HorizontalTextAlignment="Center"
+                           TextColor="#555555" />
+
+                    <Label Text="Hãy tạo phòng mới để bắt đầu"
+                           FontSize="14"
+                           HorizontalTextAlignment="Center"
+                           TextColor="#888888" />
+
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+
+                    <Border
+                        BackgroundColor="White"
+                        Stroke="#E2E2E2"
+                        StrokeThickness="1"
+                        Padding="16"
+                        Margin="0,0,0,12">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="16" />
+                        </Border.StrokeShape>
+
+                        <Grid ColumnDefinitions="*,Auto"
+                              RowDefinitions="Auto,Auto,Auto"
+                              RowSpacing="8">
+
+                            <!-- TÊN ROOM -->
+                            <Label Grid.Row="0"
+                                   Grid.Column="0"
+                                   Text="{Binding RoomName}"
+                                   FontSize="19"
+                                   FontAttributes="Bold"
+                                   TextColor="#222222" />
+
+                            <!-- ROOM ID -->
+                            <Label Grid.Row="1"
+                                   Grid.Column="0"
+                                   Text="{Binding RoomId}"
+                                   FontSize="13"
+                                   TextColor="#888888" />
+
+                            <!-- SỐ PLAYER -->
+                            <Label Grid.Row="2"
+                                   Grid.Column="0"
+                                   Text="👤 1 / 2 Players"
+                                   FontSize="14"
+                                   TextColor="#555555" />
+
+                            <!-- JOIN -->
+                            <Button Grid.Row="0"
+                                    Grid.RowSpan="3"
+                                    Grid.Column="1"
+                                    Text="JOIN"
+                                    WidthRequest="90"
+                                    HeightRequest="45"
+                                    CornerRadius="12"
+                                    BackgroundColor="#6750A4"
+                                    TextColor="White"
+                                    CommandParameter="{Binding .}"
+                                    Clicked="JoinRoom_Clicked" />
+
+                        </Grid>
+
+                    </Border>
+
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+
+        <!-- CREATE ROOM -->
+        <Button Grid.Row="2"
+                Text="+  CREATE ROOM"
+                HeightRequest="55"
+                Margin="0,15,0,5"
+                CornerRadius="16"
+                FontAttributes="Bold"
+                FontSize="16"
+                BackgroundColor="#6750A4"
+                TextColor="White"
+                Clicked="CreateRoom_Clicked" />
+
+    </Grid>
+
+</ContentPage>

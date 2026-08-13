@@ -40,7 +40,7 @@ namespace Sudoku.Server.Game
         }
     }
 
-    internal sealed class SudokuGenerator
+    internal sealed class SudokuGenerator : ISudokuGenerator
     {
         private const int Size = 9;
         private const int BoxSize = 3;
