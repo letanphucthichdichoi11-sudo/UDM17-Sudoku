@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Sudoku.Mobile.RegisterPage"
+             Title="Đăng ký"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#F3F4F6">
+
+    <Grid>
+        <BoxView Color="#2b0b98" HeightRequest="200" VerticalOptions="Start" />
+
+        <ScrollView VerticalOptions="Center">
+            <Border StrokeShape="RoundRectangle 20" Stroke="Transparent" BackgroundColor="White" Margin="25,40,25,20" Padding="25,30,25,30">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Opacity="0.1" Offset="0,10" Radius="20"/>
+                </Border.Shadow>
+
+                <VerticalStackLayout Spacing="15">
+                    <Label Text="Tạo Tài Khoản" FontSize="26" FontAttributes="Bold" HorizontalOptions="Center" TextColor="#1F2937" Margin="0,0,0,5"/>
+
+                    <VerticalStackLayout x:Name="RegisterFormLayout" Spacing="15">
+                        <Frame Padding="15,0" CornerRadius="12" BorderColor="#E5E7EB" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="50">
+                            <Entry x:Name="UsernameEntry" Placeholder="Tên hiển thị" ClearButtonVisibility="WhileEditing" TextColor="#111827"/>
+                        </Frame>
+
+                        <Frame Padding="15,0" CornerRadius="12" BorderColor="#E5E7EB" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="50">
+                            <Entry x:Name="EmailEntry" Placeholder="Email" Keyboard="Email" ClearButtonVisibility="WhileEditing" TextColor="#111827"/>
+                        </Frame>
+
+                        <Frame Padding="15,0" CornerRadius="12" BorderColor="#E5E7EB" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="50">
+                            <Entry x:Name="PasswordEntry" Placeholder="Mật khẩu" IsPassword="True" TextChanged="OnPasswordTextChanged" TextColor="#111827"/>
+                        </Frame>
+
+                        <VerticalStackLayout Spacing="5" Margin="5,0,5,0">
+                            <ProgressBar x:Name="PasswordStrengthBar" Progress="0" HeightRequest="6" ProgressColor="LightGray" />
+                            <Label x:Name="PasswordStrengthLabel" Text="Nhập mật khẩu..." FontSize="12" TextColor="#9CA3AF" HorizontalOptions="End"/>
+                        </VerticalStackLayout>
+
+                        <Frame Padding="15,0" CornerRadius="12" BorderColor="#E5E7EB" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="50">
+                            <Entry x:Name="ConfirmPasswordEntry" Placeholder="Xác nhận mật khẩu" IsPassword="True" TextColor="#111827"/>
+                        </Frame>
+
+                        <Button x:Name="RegisterBtn" Text="Đăng ký &amp; Nhận OTP" Clicked="OnRegisterClicked" 
+                                BackgroundColor="#2b0b98" TextColor="White" CornerRadius="25" HeightRequest="50" FontAttributes="Bold" Margin="0,10,0,0"/>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout x:Name="OtpFormLayout" Spacing="20" IsVisible="False" Margin="0,10,0,0">
+                        <Label Text="Mã OTP gồm 6 số vừa được gửi tới Email của bạn. Vui lòng kiểm tra hộp thư." 
+                               HorizontalTextAlignment="Center" TextColor="#6B7280" FontSize="14"/>
+
+                        <Frame Padding="15,0" CornerRadius="12" BorderColor="#E5E7EB" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="55">
+                            <Entry x:Name="OtpEntry" Placeholder="Nhập mã OTP" Keyboard="Numeric" MaxLength="6" HorizontalTextAlignment="Center" FontSize="20" FontAttributes="Bold" TextColor="#111827"/>
+                        </Frame>
+
+                        <Button x:Name="VerifyOtpBtn" Text="Xác nhận OTP" Clicked="OnVerifyOtpClicked" 
+                                BackgroundColor="#10B981" TextColor="White" CornerRadius="25" HeightRequest="50" FontAttributes="Bold"/>
+                    </VerticalStackLayout>
+                </VerticalStackLayout>
+            </Border>
+        </ScrollView>
+    </Grid>
+</ContentPage>
