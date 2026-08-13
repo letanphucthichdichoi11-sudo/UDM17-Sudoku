@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\GameState.cs" />
+    <Compile Include="Models\MatchContracts.cs" />
     <Compile Include="Models\Player.cs" />
     <Compile Include="Models\Room.cs" />
     <Compile Include="Models\SudokuCell.cs" />
