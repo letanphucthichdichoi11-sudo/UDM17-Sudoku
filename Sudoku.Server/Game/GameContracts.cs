@@ -4,6 +4,16 @@ using Sudoku.Shared.Models;
 
 namespace Sudoku.Server.Game
 {
+    internal interface IClock
+    {
+        DateTime UtcNow { get; }
+    }
+
+    internal sealed class SystemClock : IClock
+    {
+        public DateTime UtcNow { get { return DateTime.UtcNow; } }
+    }
+
     internal interface ISudokuGenerator
     {
         GeneratedSudoku GeneratePuzzle(
@@ -27,7 +37,11 @@ namespace Sudoku.Server.Game
             string playerBId,
             int[,] originalPuzzle,
             int[,] solutionGrid,
-            TimeSpan timeLimit);
+            Sudoku.Shared.Models.MatchDurationMinutes duration);
+
+        bool MarkPlayerReady(Guid matchId, string playerId);
+
+        MatchStatusResponse GetPlayerStatus(Guid matchId, string playerId);
 
         IList<ActiveMatchSummary> GetActiveMatchSummaries(DateTime nowUtc);
     }

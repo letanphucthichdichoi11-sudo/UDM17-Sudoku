@@ -20,5 +20,11 @@ namespace Sudoku.Server
             InitializeComponent();
             _gameServices = new GameApplicationServices();
         }
+
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            _gameServices.Dispose();
+            base.OnFormClosed(e);
+        }
     }
 }

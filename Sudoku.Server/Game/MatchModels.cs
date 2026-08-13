@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using Sudoku.Shared.Models;
 
 namespace Sudoku.Server.Game
 {
-    internal enum MatchState { Ongoing, Finished, Aborted, Archived }
+    internal enum MatchState { Preparing, Ongoing, Finished, Aborted, Archived }
     internal enum ConnectionStatus { Connected, Disconnected }
     internal enum MatchFinishReason { Completed, TimeUp, TechnicalWinDisconnect, BothDisconnected, ServerRestart }
-    internal enum MoveErrorCode { None, MatchNotFound, MatchNotOngoing, NotAPlayer, DuplicateMoveNotFound, OutOfRange, GivenCellLocked, InvalidValue, IncorrectValue }
+    internal enum MoveErrorCode { None, MatchNotFound, MatchNotOngoing, MatchExpired, NotAPlayer, DuplicateMoveNotFound, OutOfRange, GivenCellLocked, InvalidValue, IncorrectValue }
 
     internal sealed class PlayerBoardState
     {
@@ -40,7 +41,11 @@ namespace Sudoku.Server.Game
         public PlayerBoardState BoardA { get; set; }
         public PlayerBoardState BoardB { get; set; }
         public TimeSpan TimeLimit { get; set; }
-        public DateTime ServerStartTimestamp { get; set; }
+        public MatchDurationMinutes Duration { get; set; }
+        public DateTime? StartedAtUtc { get; set; }
+        public DateTime? EndsAtUtc { get; set; }
+        public bool PlayerAReady { get; set; }
+        public bool PlayerBReady { get; set; }
         public MatchState State { get; set; }
         public ConnectionStatus ConnectionA { get; set; }
         public ConnectionStatus ConnectionB { get; set; }
@@ -93,6 +98,10 @@ namespace Sudoku.Server.Game
         public int OpponentCorrectCount { get; set; }
         public int OpponentErrorCount { get; set; }
         public TimeSpan TimeLeft { get; set; }
+        public DateTime ServerUtcNow { get; set; }
+        public DateTime? StartedAtUtc { get; set; }
+        public DateTime? EndsAtUtc { get; set; }
+        public MatchState State { get; set; }
     }
 
     internal sealed class SpectatorMatchSnapshot
@@ -106,6 +115,9 @@ namespace Sudoku.Server.Game
         public int ErrorCountA { get; set; }
         public int ErrorCountB { get; set; }
         public TimeSpan TimeLeft { get; set; }
+        public DateTime ServerUtcNow { get; set; }
+        public DateTime? StartedAtUtc { get; set; }
+        public DateTime? EndsAtUtc { get; set; }
     }
 
     internal sealed class ActiveMatchSummary
@@ -120,6 +132,8 @@ namespace Sudoku.Server.Game
         public int ErrorCountB { get; set; }
         public int SpectatorCount { get; set; }
         public TimeSpan TimeLeft { get; set; }
+        public DateTime ServerUtcNow { get; set; }
+        public DateTime? EndsAtUtc { get; set; }
     }
 
     internal class MatchEventArgs : EventArgs
