@@ -57,6 +57,7 @@
     <Compile Include="Game\GameApplicationServices.cs" />
     <Compile Include="Game\MatchCoordinator.cs" />
     <Compile Include="Game\MatchModels.cs" />
+    <Compile Include="Game\MatchTimerService.cs" />
     <Compile Include="Game\MatchRepository.cs" />
     <Compile Include="Game\SudokuGenerator.cs" />
     <Compile Include="Game\SudokuGridValidator.cs" />
