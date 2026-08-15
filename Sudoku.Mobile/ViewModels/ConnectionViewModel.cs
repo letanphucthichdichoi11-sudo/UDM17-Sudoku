@@ -69,7 +69,9 @@ public class ConnectionViewModel : INotifyPropertyChanged
         IsConnected = false;
 
         bool connected =
-            await _serverService.CheckServerConnectionAsync();
+            await _serverService.ConnectAsync(
+                GetOrCreatePlayerId(),
+                "Player");
 
         if (connected)
         {
@@ -91,5 +93,15 @@ public class ConnectionViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(
             this,
             new PropertyChangedEventArgs(propertyName));
+    }
+
+    private static string GetOrCreatePlayerId()
+    {
+        const string key = "sudoku-player-id";
+        string? playerId = Preferences.Default.Get<string?>(key, null);
+        if (!String.IsNullOrWhiteSpace(playerId)) return playerId;
+        playerId = "player-" + Guid.NewGuid().ToString("N");
+        Preferences.Default.Set(key, playerId);
+        return playerId;
     }
 }

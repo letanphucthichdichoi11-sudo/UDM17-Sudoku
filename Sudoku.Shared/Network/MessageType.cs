@@ -1,12 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Sudoku.Shared.Network
 {
-    internal class MessageType
+    public enum MessageType
     {
+        Handshake,
+        HandshakeAccepted,
+        Heartbeat,
+        HeartbeatAck,
+        Error,
+        Reconnect,
+        ReconnectAccepted,
+        PlayerDisconnected,
+        ListRooms,
+        CreateRoom,
+        JoinRoom,
+        LeaveRoom,
+        RoomUpdated,
+        StartMatch,
+        MatchPrepared,
+        PlayerReady,
+        MatchStarted,
+        GetMatchStatus,
+        MatchStatusUpdated,
+        SubmitMove,
+        MoveResult,
+        OpponentProgressUpdated,
+        MatchFinished
     }
 }

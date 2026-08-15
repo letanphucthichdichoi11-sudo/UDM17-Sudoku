@@ -1,6 +1,7 @@
-# UDM17 Sudoku
+# UDM17 Sudoku hello nha
 
 UDM17 Sudoku là dự án game Sudoku đối kháng qua mạng, gồm ứng dụng mobile, server quản lý phòng và trận đấu, cùng thư viện model dùng chung. Server chịu trách nhiệm tạo đề, giữ lời giải, xác thực nước đi và quản lý trạng thái của người chơi trong trận.
+
 
 ## Chức năng chính
 

@@ -1,118 +1,80 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Sudoku.Server.Game;
 
 namespace Sudoku.Server.Network
 {
-    internal class Server
+    internal sealed class Server : IDisposable
     {
         private readonly TcpListener _listener;
-        private readonly ConcurrentBag<TcpClient> _clients;
-
-        private CancellationTokenSource _cancellationTokenSource;
+        private readonly ConcurrentDictionary<Guid, ClientHandler> _clients =
+            new ConcurrentDictionary<Guid, ClientHandler>();
+        private readonly MessageDispatcher _dispatcher;
+        private CancellationTokenSource _cancellation;
 
         public int Port { get; private set; }
-
         public bool IsRunning { get; private set; }
 
-        public Server(int port = 5000)
+        public Server(GameApplicationServices games, int port = 5000)
         {
             Port = port;
-
-            _listener = new TcpListener(
-                IPAddress.Any,
-                Port
-            );
-
-            _clients = new ConcurrentBag<TcpClient>();
+            _listener = new TcpListener(IPAddress.Any, port);
+            var sessions = new SessionManager();
+            _dispatcher = new MessageDispatcher(games, sessions, games.Clock);
         }
 
         public async Task StartAsync()
         {
-            if (IsRunning)
-                return;
-
-            _cancellationTokenSource =
-                new CancellationTokenSource();
-
+            if (IsRunning) return;
+            _cancellation = new CancellationTokenSource();
             _listener.Start();
-
             IsRunning = true;
-
-            Console.WriteLine(
-                "[SERVER] Started on port " + Port
-            );
 
             try
             {
-                while (
-                    !_cancellationTokenSource.Token
-                        .IsCancellationRequested
-                )
+                while (!_cancellation.IsCancellationRequested)
                 {
-                    TcpClient client =
-                        await _listener.AcceptTcpClientAsync();
-
-                    _clients.Add(client);
-
-                    Console.WriteLine(
-                        "[SERVER] Client connected: "
-                        + client.Client.RemoteEndPoint
-                    );
-
-                    // KAN-5:
-                    // ClientHandler sẽ xử lý client
-                    // sau khi task KAN-5 được thực hiện.
+                    TcpClient client = await _listener.AcceptTcpClientAsync();
+                    client.NoDelay = true;
+                    var handler = new ClientHandler(client, _dispatcher);
+                    _clients[handler.ConnectionId] = handler;
+                    RunClientAsync(handler);
                 }
             }
-            catch (ObjectDisposedException)
+            catch (ObjectDisposedException) { }
+            catch (SocketException) { if (IsRunning) throw; }
+            finally { IsRunning = false; }
+        }
+
+        private async void RunClientAsync(ClientHandler handler)
+        {
+            try { await handler.HandleAsync(); }
+            finally
             {
-                // Server đã được Stop()
-            }
-            catch (SocketException)
-            {
-                // Listener đã được đóng khi Stop()
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(
-                    "[SERVER] Error: " + ex.Message
-                );
+                ClientHandler removed;
+                _clients.TryRemove(handler.ConnectionId, out removed);
+                handler.Dispose();
             }
         }
 
         public void Stop()
         {
-            if (!IsRunning)
-                return;
-
+            if (!IsRunning) return;
             IsRunning = false;
-
-            if (_cancellationTokenSource != null)
-            {
-                _cancellationTokenSource.Cancel();
-            }
-
+            _cancellation.Cancel();
             _listener.Stop();
+            foreach (ClientHandler client in _clients.Values) client.Dispose();
+            _clients.Clear();
+        }
 
-            foreach (TcpClient client in _clients)
-            {
-                try
-                {
-                    client.Close();
-                }
-                catch
-                {
-                    // Bỏ qua lỗi khi đóng client
-                }
-            }
-
-            Console.WriteLine(
-                "[SERVER] Stopped."
-            );
+        public void Dispose()
+        {
+            Stop();
+            if (_cancellation != null) _cancellation.Dispose();
         }
     }
 }

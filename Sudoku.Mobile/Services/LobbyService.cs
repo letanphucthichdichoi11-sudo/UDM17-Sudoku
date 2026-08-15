@@ -1,128 +1,83 @@
-﻿using Sudoku.Mobile.Models;
+using Sudoku.Mobile.Models;
 using Sudoku.Mobile.Network;
+using Sudoku.Shared.Network;
 
 namespace Sudoku.Mobile.Services;
 
-public class LobbyService
+public sealed class LobbyService
 {
-    private readonly ApiClient _apiClient;
+    private readonly TcpGameClient _client;
 
-    public LobbyService(ApiClient apiClient)
+    public event EventHandler<List<LobbyRoom>>? RoomsUpdated;
+
+    public LobbyService(TcpGameClient client)
     {
-        _apiClient = apiClient;
+        _client = client;
+        _client.EventReceived += OnEventReceived;
     }
-
-    // ============================
-    // LẤY DANH SÁCH ROOM
-    // ============================
 
     public async Task<List<LobbyRoom>> GetRoomsAsync()
     {
-        var rooms = await _apiClient.GetAsync<List<LobbyRoom>>(
-            "api/lobby/rooms");
-
-        return rooms ?? new List<LobbyRoom>();
+        RoomListResponse response = await _client.RequestAsync<EmptyPayload, RoomListResponse>(
+            MessageType.ListRooms, new EmptyPayload());
+        return response.Rooms.Select(MapRoom).ToList();
     }
 
-
-    // ============================
-    // TẠO ROOM
-    // ============================
-
-    public async Task<LobbyRoom?> CreateRoomAsync(
-        string playerId,
-        string roomName)
+    public async Task<LobbyRoom?> CreateRoomAsync(string playerId, string roomName)
     {
-        var request = new CreateRoomRequest
+        LobbyRoomDto room = await _client.RequestAsync<CreateRoomRequest, LobbyRoomDto>(
+            MessageType.CreateRoom,
+            new CreateRoomRequest { RoomName = roomName });
+        return MapRoom(room);
+    }
+
+    public async Task<LobbyRoom?> JoinRoomAsync(string roomId, string playerId)
+    {
+        LobbyRoomDto room = await _client.RequestAsync<RoomRequest, LobbyRoomDto>(
+            MessageType.JoinRoom,
+            new RoomRequest { RoomId = Guid.Parse(roomId) });
+        return MapRoom(room);
+    }
+
+    public async Task<bool> LeaveRoomAsync(string roomId, string playerId)
+    {
+        await _client.RequestAsync<RoomRequest, EmptyPayload>(
+            MessageType.LeaveRoom,
+            new RoomRequest { RoomId = Guid.Parse(roomId) });
+        return true;
+    }
+
+    public Task<bool> CheckServerAsync()
+    {
+        return Task.FromResult(_client.IsConnected);
+    }
+
+    private void OnEventReceived(object? sender, Message message)
+    {
+        if (message.Type != MessageType.RoomUpdated) return;
+        RoomListResponse response = message.ReadPayload<RoomListResponse>();
+        RoomsUpdated?.Invoke(this, response.Rooms.Select(MapRoom).ToList());
+    }
+
+    private static LobbyRoom MapRoom(LobbyRoomDto room)
+    {
+        return new LobbyRoom
         {
-            PlayerId = playerId,
-            RoomName = roomName
+            RoomId = room.RoomId.ToString(),
+            RoomName = room.RoomName,
+            Player1 = room.Players.Count > 0 ? MapPlayer(room.Players[0]) : null,
+            Player2 = room.Players.Count > 1 ? MapPlayer(room.Players[1]) : null,
+            HasActiveMatch = room.HasActiveMatch
         };
-
-        return await _apiClient.PostAsync<CreateRoomRequest, LobbyRoom>(
-            "api/lobby/rooms",
-            request);
     }
 
-
-    // ============================
-    // JOIN ROOM
-    // ============================
-
-    public async Task<LobbyRoom?> JoinRoomAsync(
-        string roomId,
-        string playerId)
+    private static LobbyPlayer MapPlayer(LobbyPlayerDto player)
     {
-        var request = new JoinRoomRequest
+        return new LobbyPlayer
         {
-            PlayerId = playerId
+            PlayerId = player.PlayerId,
+            Username = player.PlayerName,
+            IsOnline = true
         };
-
-        return await _apiClient.PostAsync<JoinRoomRequest, LobbyRoom>(
-            $"api/lobby/rooms/{roomId}/join",
-            request);
     }
-
-
-    // ============================
-    // LEAVE ROOM
-    // ============================
-
-    public async Task<bool> LeaveRoomAsync(
-        string roomId,
-        string playerId)
-    {
-        var request = new LeaveRoomRequest
-        {
-            PlayerId = playerId
-        };
-
-        var result = await _apiClient.PostAsync<LeaveRoomRequest, ApiResult>(
-            $"api/lobby/rooms/{roomId}/leave",
-            request);
-
-        return result?.Success == true;
-    }
-
-
-    // ============================
-    // KIỂM TRA SERVER
-    // ============================
-
-    public async Task<bool> CheckServerAsync()
-    {
-        return await _apiClient.CheckConnectionAsync();
-    }
-}
-
-
-// ========================================
-// REQUEST MODELS
-// ========================================
-
-public class CreateRoomRequest
-{
-    public string PlayerId { get; set; } = string.Empty;
-
-    public string RoomName { get; set; } = string.Empty;
-}
-
-
-public class JoinRoomRequest
-{
-    public string PlayerId { get; set; } = string.Empty;
-}
-
-
-public class LeaveRoomRequest
-{
-    public string PlayerId { get; set; } = string.Empty;
-}
-
-
-public class ApiResult
-{
-    public bool Success { get; set; }
-
-    public string? Message { get; set; }
 }

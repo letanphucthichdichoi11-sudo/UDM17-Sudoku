@@ -172,7 +172,7 @@ namespace Sudoku.Server.Game
                 {
                     MatchId = match.MatchId,
                     RoomId = match.RoomId,
-                    Puzzle = MatchGrid.Clone(snapshot.OriginalPuzzle),
+                    Puzzle = MatchGrid.Flatten(snapshot.OriginalPuzzle),
                     State = (MatchLifecycleState)match.State,
                     Duration = match.Duration,
                     PlayerAReady = match.PlayerAReady,

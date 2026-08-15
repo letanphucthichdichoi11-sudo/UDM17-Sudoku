@@ -157,5 +157,14 @@ namespace Sudoku.Server.Game
             Array.Copy(grid, copy, grid.Length);
             return copy;
         }
+
+        public static int[] Flatten(int[,] grid)
+        {
+            var values = new int[81];
+            for (int row = 0; row < 9; row++)
+            for (int column = 0; column < 9; column++)
+                values[row * 9 + column] = grid[row, column];
+            return values;
+        }
     }
 }

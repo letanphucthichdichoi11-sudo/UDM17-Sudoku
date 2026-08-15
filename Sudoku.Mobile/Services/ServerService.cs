@@ -1,53 +1,22 @@
-﻿using Sudoku.Mobile.Network;
+using Sudoku.Mobile.Network;
 
 namespace Sudoku.Mobile.Services;
 
-public class ServerService
+public sealed class ServerService
 {
-    private readonly ApiClient _apiClient;
+    private readonly TcpGameClient _client = TcpGameClient.Shared;
 
-    public ServerService()
-    {
-        _apiClient = new ApiClient();
-    }
-
-    public async Task<bool> CheckServerConnectionAsync()
+    public async Task<bool> ConnectAsync(string playerId, string playerName)
     {
         try
         {
-            return await _apiClient.CheckConnectionAsync();
+            await _client.ConnectAsync(playerId, playerName);
+            return true;
         }
-        catch
+        catch (Exception exception)
         {
+            Console.WriteLine("TCP connection error: " + exception.Message);
             return false;
-        }
-    }
-
-    public async Task<T?> GetAsync<T>(string endpoint)
-    {
-        try
-        {
-            return await _apiClient.GetAsync<T>(endpoint);
-        }
-        catch
-        {
-            return default;
-        }
-    }
-
-    public async Task<TResponse?> PostAsync<TRequest, TResponse>(
-        string endpoint,
-        TRequest data)
-    {
-        try
-        {
-            return await _apiClient.PostAsync<TRequest, TResponse>(
-                endpoint,
-                data);
-        }
-        catch
-        {
-            return default;
         }
     }
 }

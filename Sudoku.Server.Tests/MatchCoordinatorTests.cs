@@ -32,6 +32,13 @@ namespace Sudoku.Server.Tests
             Assert.AreEqual(1, matches.GetActiveMatchSummaries(
                 DateTime.UtcNow).Count);
 
+            Assert.IsFalse(matches.MarkPlayerReady(
+                match.MatchId,
+                match.PlayerAId));
+            Assert.IsTrue(matches.MarkPlayerReady(
+                match.MatchId,
+                match.PlayerBId));
+
             int emptyRow = -1;
             int emptyCol = -1;
             for (int row = 0; row < 9 && emptyRow < 0; row++)
