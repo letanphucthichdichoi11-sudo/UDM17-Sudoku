@@ -4,59 +4,176 @@
              x:Class="Sudoku.Mobile.RegisterPage"
              Title="Đăng ký"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="#F3F4F6">
+             BackgroundColor="#F4F0FF">
 
     <Grid>
-        <BoxView Color="#2b0b98" HeightRequest="200" VerticalOptions="Start" />
+        <!-- ========================================== -->
+        <!-- LỚP NỀN: CÁC HỌA TIẾT TRANG TRÍ MÀ BẠN CẮT -->
+        <!-- ========================================== -->
 
+        <!-- 2 Vòng tròn màu tím -->
+        <Image Source="bg_blob22.png" HorizontalOptions="Start" VerticalOptions="Start" Margin="-60,-40,0,0" WidthRequest="320" Opacity="0.6" Aspect="AspectFit"/>
+        <Image Source="bg_blob22.png" HorizontalOptions="Center" VerticalOptions="End" Margin="80,0,-50,-50" WidthRequest="380" Opacity="0.6" Aspect="AspectFit"/>
+
+        <!-- 2 Cục hình vuông Rubik -->
+        <Image Source="mini_grid.png" HorizontalOptions="Start" VerticalOptions="End" Margin="30,0,0,120" WidthRequest="60" Rotation="-15" Aspect="AspectFit"/>
+        <Image Source="mini_grid_1.png" HorizontalOptions="End" VerticalOptions="Center" Margin="0,150,-20,0" WidthRequest="45" Rotation="20" Aspect="AspectFit"/>
+
+        <!-- 2 Đốm tròn -->
+        <Image Source="confetti.png" HorizontalOptions="Start" VerticalOptions="Center" Margin="50,250,0,0" WidthRequest="15" Aspect="AspectFit"/>
+        <Image Source="confetti_1.png" HorizontalOptions="End" VerticalOptions="End" Margin="0,0,80,180" WidthRequest="12" Aspect="AspectFit"/>
+
+
+        <!-- ========================================== -->
+        <!-- LỚP TRÊN CÙNG: KHUNG ĐĂNG KÝ (CARD)        -->
+        <!-- ========================================== -->
         <ScrollView VerticalOptions="Center">
-            <Border StrokeShape="RoundRectangle 20" Stroke="Transparent" BackgroundColor="White" Margin="25,40,25,20" Padding="25,30,25,30">
-                <Border.Shadow>
-                    <Shadow Brush="Black" Opacity="0.1" Offset="0,10" Radius="20"/>
-                </Border.Shadow>
+            <!-- Khung lưới chống cắt xén trên Windows -->
+            <Grid HorizontalOptions="Center" MaximumWidthRequest="450" MinimumWidthRequest="350">
 
-                <VerticalStackLayout Spacing="15">
-                    <Label Text="Tạo Tài Khoản" FontSize="26" FontAttributes="Bold" HorizontalOptions="Center" TextColor="#1F2937" Margin="0,0,0,5"/>
+                <Border StrokeShape="RoundRectangle 30" Stroke="Transparent" BackgroundColor="White" 
+                        Margin="0,20,0,20" Padding="20,40,20,30">
+                    <Border.Shadow>
+                        <Shadow Brush="#7C3AED" Opacity="0.15" Offset="0,15" Radius="25"/>
+                    </Border.Shadow>
 
-                    <VerticalStackLayout x:Name="RegisterFormLayout" Spacing="15">
-                        <Frame Padding="15,0" CornerRadius="12" BorderColor="#E5E7EB" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="50">
-                            <Entry x:Name="UsernameEntry" Placeholder="Tên hiển thị" ClearButtonVisibility="WhileEditing" TextColor="#111827"/>
-                        </Frame>
+                    <!-- Khung chứa để C# có thể ẩn/hiện form Đăng ký hoặc form OTP -->
+                    <Grid>
 
-                        <Frame Padding="15,0" CornerRadius="12" BorderColor="#E5E7EB" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="50">
-                            <Entry x:Name="EmailEntry" Placeholder="Email" Keyboard="Email" ClearButtonVisibility="WhileEditing" TextColor="#111827"/>
-                        </Frame>
+                        <!-- ========================================== -->
+                        <!-- FORM 1: ĐĂNG KÝ TÀI KHOẢN                  -->
+                        <!-- ========================================== -->
+                        <VerticalStackLayout x:Name="RegisterFormLayout" Spacing="15">
 
-                        <Frame Padding="15,0" CornerRadius="12" BorderColor="#E5E7EB" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="50">
-                            <Entry x:Name="PasswordEntry" Placeholder="Mật khẩu" IsPassword="True" TextChanged="OnPasswordTextChanged" TextColor="#111827"/>
-                        </Frame>
+                            <Label Text="Create Profile!" FontSize="28" FontAttributes="Bold" HorizontalOptions="Center" TextColor="#7C3AED" />
+                            <Label Text="Join thousands of puzzle lovers!" FontSize="14" HorizontalOptions="Center" TextColor="#9CA3AF" Margin="0,-5,0,10" />
 
-                        <VerticalStackLayout Spacing="5" Margin="5,0,5,0">
-                            <ProgressBar x:Name="PasswordStrengthBar" Progress="0" HeightRequest="6" ProgressColor="LightGray" />
-                            <Label x:Name="PasswordStrengthLabel" Text="Nhập mật khẩu..." FontSize="12" TextColor="#9CA3AF" HorizontalOptions="End"/>
+                            <!-- 1. Ô nhập Username -->
+                            <Border StrokeShape="RoundRectangle 16" Stroke="#8B5CF6" StrokeThickness="2" BackgroundColor="White" WidthRequest="310" HeightRequest="55" Padding="15,0" HorizontalOptions="Center">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Image Source="vector2.png" WidthRequest="22" HeightRequest="22" VerticalOptions="Center" Margin="0,0,10,0" Aspect="AspectFit"/>
+                                    <Entry Grid.Column="1" x:Name="UsernameEntry" Placeholder="Pick Username" TextColor="#9CA3AF" PlaceholderColor="#A78BFA" BackgroundColor="Transparent" HeightRequest="35" VerticalOptions="Center" HorizontalOptions="Fill"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- 2. Ô nhập Email -->
+                            <Border StrokeShape="RoundRectangle 16" Stroke="#8B5CF6" StrokeThickness="2" BackgroundColor="White" WidthRequest="310" HeightRequest="55" Padding="15,0" HorizontalOptions="Center">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Image Source="vector.png" WidthRequest="22" HeightRequest="22" VerticalOptions="Center" Margin="0,0,10,0" Aspect="AspectFit"/>
+                                    <Entry Grid.Column="1" x:Name="EmailEntry" Placeholder="Email Address" Keyboard="Email" TextColor="#9CA3AF" PlaceholderColor="#A78BFA" BackgroundColor="Transparent" HeightRequest="35" VerticalOptions="Center" HorizontalOptions="Fill"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- 3. Ô nhập Password -->
+                            <Border StrokeShape="RoundRectangle 16" Stroke="#8B5CF6" StrokeThickness="2" BackgroundColor="White" WidthRequest="310" HeightRequest="55" Padding="15,0" HorizontalOptions="Center">
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <Image Source="lock.png" WidthRequest="22" HeightRequest="22" VerticalOptions="Center" Margin="0,0,10,0" Aspect="AspectFit"/>
+                                    <Entry Grid.Column="1" x:Name="PasswordEntry" Placeholder="Choose Password" IsPassword="True" TextColor="#9CA3AF" PlaceholderColor="#A78BFA" BackgroundColor="Transparent" HeightRequest="35" VerticalOptions="Center" HorizontalOptions="Fill" TextChanged="OnPasswordTextChanged"/>
+                                </Grid>
+                            </Border>
+
+                            <!-- 3 Khung Password Power dùng ảnh AI -->
+                            <VerticalStackLayout Spacing="8" Margin="0,5,0,0" WidthRequest="310" HorizontalOptions="Center">
+                                <Label Text="PASSWORD POWER:" FontSize="12" FontAttributes="Bold" TextColor="#1F2937"/>
+
+                                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10" HeightRequest="32">
+
+                                    <Grid Grid.Column="0">
+                                        <Image x:Name="ImgNovice" Source="novice_empty_state.png" Aspect="Fill"/>
+                                        <Label x:Name="LblNovice" Text="Novice" TextColor="#EF4444" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </Grid>
+
+                                    <Grid Grid.Column="1">
+                                        <Image x:Name="ImgPro" Source="pro_empty_state.png" Aspect="Fill"/>
+                                        <Label x:Name="LblPro" Text="PRO ⭐" TextColor="#EAB308" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </Grid>
+
+                                    <Grid Grid.Column="2">
+                                        <Image x:Name="ImgMaster" Source="master_empty_state.png" Aspect="Fill"/>
+                                        <Label x:Name="LblMaster" Text="Master" TextColor="#10B981" FontSize="12" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                                    </Grid>
+
+                                </Grid>
+                            </VerticalStackLayout>
+
+                            <!-- Khung và chữ nút Register -->
+                            <Grid Margin="0,15,0,0" HeightRequest="65" WidthRequest="310" HorizontalOptions="Center">
+                                <Image Source="bt_3d1.png" Aspect="AspectFit" />
+                                <Button x:Name="RegisterBtn" Text="Register &amp; Get OTP" Clicked="OnRegisterClicked" 
+                                        BackgroundColor="Transparent" TextColor="White" FontAttributes="Bold" FontSize="16"/>
+                            </Grid>
+
+                            <HorizontalStackLayout HorizontalOptions="Center" Spacing="5" Margin="0,10,0,0">
+                                <Label Text="Already a player?" TextColor="#A78BFA" VerticalOptions="Center"/>
+                                <Label Text="Log in!" TextColor="#06B6D4" FontAttributes="Bold" VerticalOptions="Center">
+                                    <Label.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnLoginTapped" />
+                                    </Label.GestureRecognizers>
+                                </Label>
+                            </HorizontalStackLayout>
                         </VerticalStackLayout>
 
-                        <Frame Padding="15,0" CornerRadius="12" BorderColor="#E5E7EB" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="50">
-                            <Entry x:Name="ConfirmPasswordEntry" Placeholder="Xác nhận mật khẩu" IsPassword="True" TextColor="#111827"/>
-                        </Frame>
 
-                        <Button x:Name="RegisterBtn" Text="Đăng ký &amp; Nhận OTP" Clicked="OnRegisterClicked" 
-                                BackgroundColor="#2b0b98" TextColor="White" CornerRadius="25" HeightRequest="50" FontAttributes="Bold" Margin="0,10,0,0"/>
-                    </VerticalStackLayout>
+                        <!-- ========================================== -->
+                        <!-- FORM 2: NHẬP OTP (ẨN MẶC ĐỊNH)             -->
+                        <!-- ========================================== -->
+                        <VerticalStackLayout x:Name="OtpFormLayout" IsVisible="False" Spacing="20">
 
-                    <VerticalStackLayout x:Name="OtpFormLayout" Spacing="20" IsVisible="False" Margin="0,10,0,0">
-                        <Label Text="Mã OTP gồm 6 số vừa được gửi tới Email của bạn. Vui lòng kiểm tra hộp thư." 
-                               HorizontalTextAlignment="Center" TextColor="#6B7280" FontSize="14"/>
+                            <!-- Nhớ xuất file ảnh icon hòm thư này từ Figma nhé -->
+                            <Image Source="icon_mailbox.png" HeightRequest="85" WidthRequest="85" HorizontalOptions="Center" Margin="0,-85,0,10" Aspect="AspectFit" />
 
-                        <Frame Padding="15,0" CornerRadius="12" BorderColor="#E5E7EB" HasShadow="False" BackgroundColor="#F9FAFB" HeightRequest="55">
-                            <Entry x:Name="OtpEntry" Placeholder="Nhập mã OTP" Keyboard="Numeric" MaxLength="6" HorizontalTextAlignment="Center" FontSize="20" FontAttributes="Bold" TextColor="#111827"/>
-                        </Frame>
+                            <Label Text="Mailbox Check!" FontSize="28" FontAttributes="Bold" HorizontalOptions="Center" TextColor="#7C3AED" />
+                            <Label Text="Enter the 6-digit code we sent you" FontSize="14" HorizontalOptions="Center" TextColor="#9CA3AF" Margin="0,-5,0,15" />
 
-                        <Button x:Name="VerifyOtpBtn" Text="Xác nhận OTP" Clicked="OnVerifyOtpClicked" 
-                                BackgroundColor="#10B981" TextColor="White" CornerRadius="25" HeightRequest="50" FontAttributes="Bold"/>
-                    </VerticalStackLayout>
-                </VerticalStackLayout>
-            </Border>
+                            <!-- 6 Ô nhập OTP xếp hàng ngang -->
+                            <HorizontalStackLayout Spacing="8" HorizontalOptions="Center">
+                                <!-- Box 1 -->
+                                <Border StrokeShape="RoundRectangle 12" Stroke="#06B6D4" StrokeThickness="2" BackgroundColor="White" WidthRequest="45" HeightRequest="55">
+                                    <Entry x:Name="Otp1" Keyboard="Numeric" MaxLength="1" HorizontalTextAlignment="Center" FontSize="22" FontAttributes="Bold" TextColor="#7C3AED" BackgroundColor="Transparent" HeightRequest="35" VerticalOptions="Center" TextChanged="OnOtpTextChanged" Focused="OnOtpFocused" Unfocused="OnOtpUnfocused"/>
+                                </Border>
+                                <!-- Box 2 -->
+                                <Border StrokeShape="RoundRectangle 12" Stroke="#06B6D4" StrokeThickness="2" BackgroundColor="White" WidthRequest="45" HeightRequest="55">
+                                    <Entry x:Name="Otp2" Keyboard="Numeric" MaxLength="1" HorizontalTextAlignment="Center" FontSize="22" FontAttributes="Bold" TextColor="#7C3AED" BackgroundColor="Transparent" HeightRequest="35" VerticalOptions="Center" TextChanged="OnOtpTextChanged" Focused="OnOtpFocused" Unfocused="OnOtpUnfocused"/>
+                                </Border>
+                                <!-- Box 3 -->
+                                <Border StrokeShape="RoundRectangle 12" Stroke="#06B6D4" StrokeThickness="2" BackgroundColor="White" WidthRequest="45" HeightRequest="55">
+                                    <Entry x:Name="Otp3" Keyboard="Numeric" MaxLength="1" HorizontalTextAlignment="Center" FontSize="22" FontAttributes="Bold" TextColor="#7C3AED" BackgroundColor="Transparent" HeightRequest="35" VerticalOptions="Center" TextChanged="OnOtpTextChanged" Focused="OnOtpFocused" Unfocused="OnOtpUnfocused"/>
+                                </Border>
+                                <!-- Box 4 -->
+                                <Border StrokeShape="RoundRectangle 12" Stroke="#06B6D4" StrokeThickness="2" BackgroundColor="White" WidthRequest="45" HeightRequest="55">
+                                    <Entry x:Name="Otp4" Keyboard="Numeric" MaxLength="1" HorizontalTextAlignment="Center" FontSize="22" FontAttributes="Bold" TextColor="#7C3AED" BackgroundColor="Transparent" HeightRequest="35" VerticalOptions="Center" TextChanged="OnOtpTextChanged" Focused="OnOtpFocused" Unfocused="OnOtpUnfocused"/>
+                                </Border>
+                                <!-- Box 5 -->
+                                <Border StrokeShape="RoundRectangle 12" Stroke="#06B6D4" StrokeThickness="2" BackgroundColor="White" WidthRequest="45" HeightRequest="55">
+                                    <Entry x:Name="Otp5" Keyboard="Numeric" MaxLength="1" HorizontalTextAlignment="Center" FontSize="22" FontAttributes="Bold" TextColor="#7C3AED" BackgroundColor="Transparent" HeightRequest="35" VerticalOptions="Center" TextChanged="OnOtpTextChanged" Focused="OnOtpFocused" Unfocused="OnOtpUnfocused"/>
+                                </Border>
+                                <!-- Box 6 -->
+                                <Border StrokeShape="RoundRectangle 12" Stroke="#06B6D4" StrokeThickness="2" BackgroundColor="White" WidthRequest="45" HeightRequest="55">
+                                    <Entry x:Name="Otp6" Keyboard="Numeric" MaxLength="1" HorizontalTextAlignment="Center" FontSize="22" FontAttributes="Bold" TextColor="#7C3AED" BackgroundColor="Transparent" HeightRequest="35" VerticalOptions="Center" TextChanged="OnOtpTextChanged" Focused="OnOtpFocused" Unfocused="OnOtpUnfocused"/>
+                                </Border>
+                            </HorizontalStackLayout>
+
+                            <!-- Nút bấm Verify 3D màu xanh lá -->
+                            <Border StrokeShape="RoundRectangle 25" Stroke="Transparent" BackgroundColor="#10B981" HeightRequest="55" WidthRequest="310" HorizontalOptions="Center" Margin="0,15,0,0">
+                                <Border.Shadow>
+                                    <Shadow Brush="#047857" Opacity="1" Offset="0,6" Radius="0"/>
+                                </Border.Shadow>
+                                <Button x:Name="VerifyOtpBtn" Text="Verify!" Clicked="OnVerifyOtpClicked" BackgroundColor="Transparent" TextColor="White" FontAttributes="Bold" FontSize="18"/>
+                            </Border>
+
+                        </VerticalStackLayout>
+
+                    </Grid>
+                </Border>
+            </Grid>
         </ScrollView>
+        <HorizontalStackLayout x:Name="SendAgainLayout" IsVisible="False" HorizontalOptions="Center" VerticalOptions="End" Margin="0,0,0,30">
+            <Label Text="Didn't get it? " TextColor="#A78BFA" FontAttributes="Bold" />
+            <Label Text="Send Again!" TextColor="#06B6D4" FontAttributes="Bold">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnResendOtpTapped" />
+                </Label.GestureRecognizers>
+            </Label>
+        </HorizontalStackLayout>
     </Grid>
 </ContentPage>

@@ -1,88 +1,63 @@
-using Sudoku.Mobile.Network;
-using Sudoku.Mobile.Models;
-
 namespace Sudoku.Mobile;
 
 public partial class ForgotPasswordPage : ContentPage
 {
-    private readonly ApiClient _apiClient;
-
     public ForgotPasswordPage()
     {
         InitializeComponent();
-        _apiClient = new ApiClient();
     }
 
-    private async void OnSendOtpClicked(object sender, EventArgs e)
+    private void OnSendOtpClicked(object sender, EventArgs e)
     {
-        string email = EmailEntry.Text?.Trim();
-
-        if (string.IsNullOrEmpty(email))
-        {
-            await DisplayAlert("Lỗi", "Vui lòng nhập Email.", "OK");
-            return;
-        }
-
-        SendOtpBtn.IsEnabled = false;
-        SendOtpBtn.Text = "Đang gửi...";
-
-        var request = new ForgotPasswordRequest { Email = email };
-        var response = await _apiClient.PostAsync<ForgotPasswordRequest, BaseAuthResponse>("api/auth/forgot-password", request);
-
-        if (response != null && response.Success)
-        {
-            Step1Layout.IsVisible = false;
-            Step2Layout.IsVisible = true;
-            await DisplayAlert("Thành công", "Mã OTP đã được gửi về Email của bạn.", "OK");
-        }
-        else
-        {
-            await DisplayAlert("Lỗi", response?.Message ?? "Không thể gửi yêu cầu.", "OK");
-        }
-
-        SendOtpBtn.IsEnabled = true;
-        SendOtpBtn.Text = "Gửi mã xác minh";
+        // Gửi API lấy mã OTP ở đây
     }
 
-    private async void OnResetPasswordClicked(object sender, EventArgs e)
+    private void OnResetPasswordClicked(object sender, EventArgs e)
     {
-        string email = EmailEntry.Text?.Trim();
-        string otp = OtpEntry.Text?.Trim();
-        string newPassword = NewPasswordEntry.Text;
-        string confirmPassword = ConfirmPasswordEntry.Text;
+        // Gọi API đặt lại mật khẩu ở đây
+    }
 
-        if (string.IsNullOrEmpty(otp) || string.IsNullOrEmpty(newPassword))
+    // 1. Tự động nhảy sang ô tiếp theo khi gõ chữ
+    private void OnOtpTextChanged(object sender, TextChangedEventArgs e)
+    {
+        var entry = sender as Entry;
+
+        if (!string.IsNullOrEmpty(e.NewTextValue))
         {
-            await DisplayAlert("Lỗi", "Vui lòng điền đầy đủ OTP và mật khẩu mới.", "OK");
-            return;
+            if (entry == Otp1) Otp2.Focus();
+            else if (entry == Otp2) Otp3.Focus();
+            else if (entry == Otp3) Otp4.Focus();
+            else if (entry == Otp4) Otp5.Focus();
+            else if (entry == Otp5) Otp6.Focus();
+            else if (entry == Otp6) NewPasswordEntry.Focus(); // Ô cuối nhảy thẳng xuống New Password
         }
+    }
 
-        if (newPassword != confirmPassword)
+    // 2. Khi con trỏ trỏ vào ô nào -> Viền ô đó chuyển màu Tím
+    private void OnOtpFocused(object sender, FocusEventArgs e)
+    {
+        var entry = sender as Entry;
+        if (entry?.Parent is Border border)
         {
-            await DisplayAlert("Lỗi", "Mật khẩu xác nhận không khớp.", "OK");
-            return;
+            border.Stroke = Color.FromArgb("#8B5CF6");
+            border.StrokeThickness = 3;
         }
+    }
 
-        ResetBtn.IsEnabled = false;
-
-        var request = new ResetPasswordRequest
+    // 3. Khi con trỏ rời đi -> Viền trả về Xanh lợt
+    private void OnOtpUnfocused(object sender, FocusEventArgs e)
+    {
+        var entry = sender as Entry;
+        if (entry?.Parent is Border border)
         {
-            Email = email,
-            Otp = otp,
-            NewPassword = newPassword
-        };
-
-        var response = await _apiClient.PostAsync<ResetPasswordRequest, BaseAuthResponse>("api/auth/reset-password", request);
-
-        if (response != null && response.Success)
-        {
-            await DisplayAlert("Thành công", "Đổi mật khẩu thành công. Vui lòng đăng nhập lại.", "OK");
-            await Shell.Current.GoToAsync("..");
+            border.Stroke = Color.FromArgb("#06B6D4");
+            border.StrokeThickness = 2;
         }
-        else
-        {
-            await DisplayAlert("Lỗi", response?.Message ?? "Mã OTP không hợp lệ hoặc đã hết hạn.", "OK");
-            ResetBtn.IsEnabled = true;
-        }
+    }
+
+    // 4. Bấm chữ Log In lùi về trang trước
+    private async void OnLoginTapped(object sender, TappedEventArgs e)
+    {
+        await Shell.Current.GoToAsync("..");
     }
 }
