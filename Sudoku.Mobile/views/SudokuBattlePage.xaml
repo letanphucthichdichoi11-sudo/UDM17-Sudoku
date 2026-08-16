@@ -1,0 +1,492 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="Sudoku.Mobile.Views.SudokuBattlePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Shell.NavBarIsVisible="False"
+    BackgroundColor="#180B0B">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <!-- HEADER -->
+        <Grid
+            Grid.Row="0"
+            Padding="16,12"
+            ColumnDefinitions="Auto,*,Auto"
+            BackgroundColor="#24100E">
+
+            <Button
+                Text="‹"
+                FontSize="34"
+                WidthRequest="45"
+                HeightRequest="45"
+                Padding="0"
+                BackgroundColor="Transparent"
+                TextColor="White"
+                Clicked="Back_Clicked"/>
+
+            <Border
+                Grid.Column="1"
+                HeightRequest="38"
+                Margin="10,0"
+                BackgroundColor="#351916"
+                Stroke="#824A36"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 19">
+
+                <Label
+                    Text="SUDO BATTLE"
+                    FontSize="16"
+                    FontAttributes="Bold"
+                    TextColor="#FFE9D0"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"/>
+            </Border>
+
+            <Button
+                Grid.Column="2"
+                Text="⚙"
+                FontSize="22"
+                WidthRequest="45"
+                HeightRequest="45"
+                Padding="0"
+                BackgroundColor="Transparent"
+                TextColor="White"/>
+
+        </Grid>
+
+
+        <!-- PLAYER AREA -->
+        <Grid
+            Grid.Row="1"
+            Padding="14,10"
+            ColumnDefinitions="*,Auto,*"
+            BackgroundColor="#1C0C0C">
+
+            <!-- PLAYER -->
+            <Grid ColumnDefinitions="Auto,*">
+
+                <Border
+                    WidthRequest="58"
+                    HeightRequest="58"
+                    Stroke="#FFB11B"
+                    StrokeThickness="3"
+                    StrokeShape="RoundRectangle 29"
+                    BackgroundColor="#4D2418">
+
+                    <Label
+                        Text="👦"
+                        FontSize="34"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
+                </Border>
+
+                <VerticalStackLayout
+                    Grid.Column="1"
+                    Margin="8,0,0,0"
+                    VerticalOptions="Center"
+                    Spacing="1">
+
+                    <Label
+                        Text="Alex"
+                        FontSize="13"
+                        FontAttributes="Bold"
+                        TextColor="White"/>
+
+                    <Label
+                        Text="58%"
+                        FontSize="12"
+                        FontAttributes="Bold"
+                        TextColor="#FFD33D"/>
+
+                    <ProgressBar
+                        Progress="0.58"
+                        HeightRequest="8"
+                        ProgressColor="#FFB51B"
+                        BackgroundColor="#593020"/>
+
+                </VerticalStackLayout>
+
+            </Grid>
+
+
+            <!-- TIMER -->
+            <VerticalStackLayout
+                Grid.Column="1"
+                WidthRequest="100"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                Spacing="0">
+
+                <Label
+                    Text="04:32"
+                    x:Name="TimerLabel"
+                    FontSize="30"
+                    FontAttributes="Bold"
+                    TextColor="#FF6C18"
+                    HorizontalTextAlignment="Center"/>
+
+                <Label
+                    Text="VS"
+                    FontSize="14"
+                    FontAttributes="Bold"
+                    TextColor="#FFD32E"
+                    HorizontalTextAlignment="Center"/>
+
+            </VerticalStackLayout>
+
+
+            <!-- OPPONENT -->
+            <Grid
+                Grid.Column="2"
+                ColumnDefinitions="*,Auto">
+
+                <VerticalStackLayout
+                    Margin="0,0,8,0"
+                    VerticalOptions="Center"
+                    HorizontalOptions="End"
+                    Spacing="1">
+
+                    <Label
+                        Text="SudokuKing"
+                        FontSize="13"
+                        FontAttributes="Bold"
+                        TextColor="White"
+                        HorizontalTextAlignment="End"/>
+
+                    <Label
+                        Text="51%"
+                        FontSize="12"
+                        FontAttributes="Bold"
+                        TextColor="#FF6D72"
+                        HorizontalTextAlignment="End"/>
+
+                    <ProgressBar
+                        Progress="0.51"
+                        HeightRequest="8"
+                        ProgressColor="#E94858"
+                        BackgroundColor="#593020"
+                        WidthRequest="90"/>
+
+                </VerticalStackLayout>
+
+                <Border
+                    Grid.Column="1"
+                    WidthRequest="58"
+                    HeightRequest="58"
+                    Stroke="#FF4C35"
+                    StrokeThickness="3"
+                    StrokeShape="RoundRectangle 29"
+                    BackgroundColor="#4D2418">
+
+                    <Label
+                        Text="👨"
+                        FontSize="34"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
+                </Border>
+
+            </Grid>
+
+        </Grid>
+
+
+        <!-- GAME AREA -->
+        <ScrollView
+            Grid.Row="2">
+
+            <VerticalStackLayout
+                Padding="10,5,10,20"
+                Spacing="12">
+
+                <!-- SUDOKU BOARD -->
+                <Border
+                    Padding="3"
+                    BackgroundColor="#F5D8A8"
+                    Stroke="#FF9C26"
+                    StrokeThickness="2"
+                    StrokeShape="RoundRectangle 8"
+                    HorizontalOptions="Center">
+
+                    <Grid
+                        x:Name="SudokuGrid"
+                        WidthRequest="350"
+                        HeightRequest="350"/>
+
+                </Border>
+
+
+                <!-- GAME CONTROLS -->
+                <Grid
+                    ColumnDefinitions="*,*,*"
+                    ColumnSpacing="10"
+                    HorizontalOptions="Center">
+
+                    <Button
+                        Text="↶&#10;UNDO"
+                        FontSize="12"
+                        WidthRequest="95"
+                        HeightRequest="70"
+                        CornerRadius="14"
+                        BackgroundColor="#34201B"
+                        TextColor="#FFE3C3"
+                        BorderColor="#81513D"
+                        BorderWidth="1"
+                        Clicked="Undo_Clicked"/>
+
+                    <Button
+                        Grid.Column="1"
+                        Text="◆&#10;ERASE"
+                        FontSize="12"
+                        WidthRequest="95"
+                        HeightRequest="70"
+                        CornerRadius="14"
+                        BackgroundColor="#34201B"
+                        TextColor="#FFE3C3"
+                        BorderColor="#81513D"
+                        BorderWidth="1"
+                        Clicked="Erase_Clicked"/>
+
+                    <Button
+                        Grid.Column="2"
+                        Text="💡&#10;HINT"
+                        FontSize="12"
+                        WidthRequest="95"
+                        HeightRequest="70"
+                        CornerRadius="14"
+                        BackgroundColor="#34201B"
+                        TextColor="#FFD447"
+                        BorderColor="#81513D"
+                        BorderWidth="1"
+                        Clicked="Hint_Clicked"/>
+
+                </Grid>
+
+
+                <!-- NUMBER PAD -->
+                <Grid
+                    ColumnDefinitions="*,*,*"
+                    RowDefinitions="*,*,*"
+                    ColumnSpacing="8"
+                    RowSpacing="8"
+                    Padding="5,0">
+
+                    <Button
+                        Text="1"
+                        FontSize="25"
+                        FontAttributes="Bold"
+                        BackgroundColor="#FFE5BE"
+                        TextColor="#492017"
+                        CornerRadius="14"
+                        Clicked="Number_Clicked"/>
+
+                    <Button
+                        Grid.Column="1"
+                        Text="2"
+                        FontSize="25"
+                        FontAttributes="Bold"
+                        BackgroundColor="#FFE5BE"
+                        TextColor="#492017"
+                        CornerRadius="14"
+                        Clicked="Number_Clicked"/>
+
+                    <Button
+                        Grid.Column="2"
+                        Text="3"
+                        FontSize="25"
+                        FontAttributes="Bold"
+                        BackgroundColor="#FFE5BE"
+                        TextColor="#492017"
+                        CornerRadius="14"
+                        Clicked="Number_Clicked"/>
+
+                    <Button
+                        Grid.Row="1"
+                        Text="4"
+                        FontSize="25"
+                        FontAttributes="Bold"
+                        BackgroundColor="#FFE5BE"
+                        TextColor="#492017"
+                        CornerRadius="14"
+                        Clicked="Number_Clicked"/>
+
+                    <Button
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Text="5"
+                        FontSize="25"
+                        FontAttributes="Bold"
+                        BackgroundColor="#FF5A25"
+                        TextColor="White"
+                        CornerRadius="14"
+                        Clicked="Number_Clicked"/>
+
+                    <Button
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Text="6"
+                        FontSize="25"
+                        FontAttributes="Bold"
+                        BackgroundColor="#FFE5BE"
+                        TextColor="#492017"
+                        CornerRadius="14"
+                        Clicked="Number_Clicked"/>
+
+                    <Button
+                        Grid.Row="2"
+                        Text="7"
+                        FontSize="25"
+                        FontAttributes="Bold"
+                        BackgroundColor="#FFE5BE"
+                        TextColor="#492017"
+                        CornerRadius="14"
+                        Clicked="Number_Clicked"/>
+
+                    <Button
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Text="8"
+                        FontSize="25"
+                        FontAttributes="Bold"
+                        BackgroundColor="#FFE5BE"
+                        TextColor="#492017"
+                        CornerRadius="14"
+                        Clicked="Number_Clicked"/>
+
+                    <Button
+                        Grid.Row="2"
+                        Grid.Column="2"
+                        Text="9"
+                        FontSize="25"
+                        FontAttributes="Bold"
+                        BackgroundColor="#FFE5BE"
+                        TextColor="#492017"
+                        CornerRadius="14"
+                        Clicked="Number_Clicked"/>
+
+                </Grid>
+
+
+                <!-- STATUS -->
+                <Border
+                    Padding="14"
+                    BackgroundColor="#301612"
+                    Stroke="#763A2B"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 15">
+
+                    <VerticalStackLayout
+                        Spacing="8">
+
+                        <Label
+                            Text="🔥 SudokuKing is ahead!"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="#FFB52C"/>
+
+                        <Label
+                            Text="⚡ YOU ARE IN THE LEAD!"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="#FFD447"/>
+
+                        <Label
+                            Text="✓ CORRECT!"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="#8BE34C"/>
+
+                        <Label
+                            Text="✕ WRONG!"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="#FF4C48"/>
+
+                        <Label
+                            Text="⚠ 30 SECONDS LEFT!"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="#FFB22E"/>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+
+        <!-- BOTTOM STATUS -->
+        <Border
+            Grid.Row="3"
+            Padding="15,10"
+            BackgroundColor="#24100E"
+            Stroke="#4C2920"
+            StrokeThickness="1">
+
+            <Grid ColumnDefinitions="*,*,*">
+
+                <VerticalStackLayout Spacing="1">
+
+                    <Label
+                        Text="52 / 81"
+                        FontSize="16"
+                        FontAttributes="Bold"
+                        TextColor="White"
+                        HorizontalTextAlignment="Center"/>
+
+                    <Label
+                        Text="SOLVED"
+                        FontSize="8"
+                        TextColor="#B99A8B"
+                        HorizontalTextAlignment="Center"/>
+
+                </VerticalStackLayout>
+
+                <VerticalStackLayout
+                    Grid.Column="1"
+                    Spacing="1">
+
+                    <Label
+                        Text="96%"
+                        FontSize="16"
+                        FontAttributes="Bold"
+                        TextColor="#FFD23C"
+                        HorizontalTextAlignment="Center"/>
+
+                    <Label
+                        Text="ACCURACY"
+                        FontSize="8"
+                        TextColor="#B99A8B"
+                        HorizontalTextAlignment="Center"/>
+
+                </VerticalStackLayout>
+
+                <VerticalStackLayout
+                    Grid.Column="2"
+                    Spacing="1">
+
+                    <Label
+                        Text="🔥 5"
+                        FontSize="16"
+                        FontAttributes="Bold"
+                        TextColor="#FF7132"
+                        HorizontalTextAlignment="Center"/>
+
+                    <Label
+                        Text="STREAK"
+                        FontSize="8"
+                        TextColor="#B99A8B"
+                        HorizontalTextAlignment="Center"/>
+
+                </VerticalStackLayout>
+
+            </Grid>
+
+        </Border>
+
+    </Grid>
+
+</ContentPage>

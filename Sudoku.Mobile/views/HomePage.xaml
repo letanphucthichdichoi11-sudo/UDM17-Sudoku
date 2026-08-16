@@ -1,0 +1,667 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="Sudoku.Mobile.Views.HomePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Shell.NavBarIsVisible="False"
+    BackgroundColor="#FFF3DF">
+
+    <Grid RowDefinitions="*,78">
+
+        <!-- ================= MAIN CONTENT ================= -->
+        <ScrollView Grid.Row="0">
+
+            <VerticalStackLayout
+                Padding="18,18,18,20"
+                Spacing="16">
+
+                <!-- HEADER -->
+                <Grid ColumnDefinitions="Auto,*,Auto">
+
+                    <!-- Avatar -->
+                    <Border
+                        WidthRequest="54"
+                        HeightRequest="54"
+                        Stroke="#FF9B22"
+                        StrokeThickness="3"
+                        StrokeShape="RoundRectangle 27"
+                        BackgroundColor="#FFF1D5">
+
+                        <Label
+                            Text="👦"
+                            FontSize="32"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"/>
+                    </Border>
+
+                    <!-- User info -->
+                    <VerticalStackLayout
+                        Grid.Column="1"
+                        Margin="12,0,0,0"
+                        Spacing="2"
+                        VerticalOptions="Center">
+
+                        <Label
+                            Text="MinhTuan"
+                            FontSize="17"
+                            FontAttributes="Bold"
+                            TextColor="#3B1710"/>
+
+                        <Label
+                            Text="LEVEL 12"
+                            FontSize="12"
+                            FontAttributes="Bold"
+                            TextColor="#B9481C"/>
+
+                        <ProgressBar
+                            Progress="0.68"
+                            HeightRequest="7"
+                            WidthRequest="145"
+                            ProgressColor="#FF7417"
+                            BackgroundColor="#F4CFA9"/>
+                    </VerticalStackLayout>
+
+                    <!-- Energy + notification -->
+                    <HorizontalStackLayout
+                        Grid.Column="2"
+                        Spacing="12"
+                        VerticalOptions="Center">
+
+                        <VerticalStackLayout
+                            Spacing="0"
+                            HorizontalOptions="Center">
+
+                            <Label
+                                Text="🔥 7"
+                                FontSize="16"
+                                FontAttributes="Bold"
+                                TextColor="#E8431B"/>
+
+                            <Label
+                                Text="STREAK"
+                                FontSize="8"
+                                HorizontalTextAlignment="Center"
+                                TextColor="#8B4935"/>
+                        </VerticalStackLayout>
+
+                        <Label
+                            Text="🔔"
+                            FontSize="23"
+                            VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+
+                </Grid>
+
+
+                <!-- XP BAR -->
+                <Border
+                    Padding="12,8"
+                    BackgroundColor="#FFE1BD"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 14">
+
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+
+                        <Label
+                            Text="⭐"
+                            FontSize="15"
+                            VerticalOptions="Center"/>
+
+                        <ProgressBar
+                            Grid.Column="1"
+                            Margin="8,0"
+                            Progress="0.68"
+                            HeightRequest="8"
+                            ProgressColor="#FF8A00"
+                            BackgroundColor="#F3C69B"
+                            VerticalOptions="Center"/>
+
+                        <Label
+                            Grid.Column="2"
+                            Text="680 / 1000 XP"
+                            FontSize="10"
+                            FontAttributes="Bold"
+                            TextColor="#7A321F"
+                            VerticalOptions="Center"/>
+
+                    </Grid>
+                </Border>
+
+
+                <!-- ================= BATTLE CARD ================= -->
+
+                <Border
+                    HeightRequest="260"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 25">
+
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop
+                                Offset="0"
+                                Color="#FF3B1F"/>
+                            <GradientStop
+                                Offset="0.55"
+                                Color="#E71926"/>
+                            <GradientStop
+                                Offset="1"
+                                Color="#9D0822"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+
+                    <Grid RowDefinitions="Auto,*,Auto">
+
+                        <!-- decorative -->
+                        <Label
+                            Text="✦   ✧       ✦"
+                            FontSize="18"
+                            TextColor="#FFD95A"
+                            Opacity="0.8"
+                            Margin="15,10"/>
+
+                        <!-- CENTER -->
+                        <VerticalStackLayout
+                            Grid.Row="1"
+                            Spacing="3"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center">
+
+                            <Label
+                                Text="1 VS 1"
+                                FontSize="17"
+                                FontAttributes="Bold"
+                                TextColor="#FFD43B"
+                                HorizontalTextAlignment="Center"/>
+
+                            <Label
+                                Text="BATTLE"
+                                FontSize="36"
+                                FontAttributes="Bold"
+                                TextColor="White"
+                                HorizontalTextAlignment="Center"/>
+
+                            <Label
+                                Text="Challenge another player&#10;and solve the same puzzle!"
+                                FontSize="12"
+                                TextColor="#FFE8D0"
+                                HorizontalTextAlignment="Center"/>
+
+                        </VerticalStackLayout>
+
+                        <!-- FIND BUTTON -->
+                        <Button
+                            Grid.Row="2"
+                            Margin="28,0,28,20"
+                            HeightRequest="48"
+                            Text="🔥  FIND OPPONENT"
+                            FontSize="14"
+                            FontAttributes="Bold"
+                            TextColor="#572000"
+                            BackgroundColor="#FFC51B"
+                            CornerRadius="24"
+                            Clicked="FindOpponent_Clicked"/>
+
+                    </Grid>
+                </Border>
+
+
+                <!-- ================= QUICK ACTIONS ================= -->
+
+                <Grid
+                    ColumnDefinitions="*,*,*,*"
+                    ColumnSpacing="9">
+
+                    <!-- QUICK -->
+                    <VerticalStackLayout
+                        Spacing="5"
+                        HorizontalOptions="Center">
+
+                        <Button
+                            Text="⚡"
+                            FontSize="25"
+                            WidthRequest="72"
+                            HeightRequest="62"
+                            CornerRadius="18"
+                            BackgroundColor="#7651E8"
+                            TextColor="White"/>
+
+                        <Label
+                            Text="QUICK MATCH"
+                            FontSize="9"
+                            FontAttributes="Bold"
+                            TextColor="#632D20"
+                            HorizontalTextAlignment="Center"/>
+                    </VerticalStackLayout>
+
+                    <!-- RANKED -->
+                    <VerticalStackLayout
+                        Grid.Column="1"
+                        Spacing="5"
+                        HorizontalOptions="Center">
+
+                        <Button
+                            Text="🏆"
+                            FontSize="24"
+                            WidthRequest="72"
+                            HeightRequest="62"
+                            CornerRadius="18"
+                            BackgroundColor="#E52A23"
+                            TextColor="White"/>
+
+                        <Label
+                            Text="RANKED"
+                            FontSize="9"
+                            FontAttributes="Bold"
+                            TextColor="#632D20"
+                            HorizontalTextAlignment="Center"/>
+                    </VerticalStackLayout>
+
+                    <!-- CHALLENGE -->
+                    <VerticalStackLayout
+                        Grid.Column="2"
+                        Spacing="5"
+                        HorizontalOptions="Center">
+
+                        <Button
+                            Text="🎁"
+                            FontSize="24"
+                            WidthRequest="72"
+                            HeightRequest="62"
+                            CornerRadius="18"
+                            BackgroundColor="#B83ACB"
+                            TextColor="White"/>
+
+                        <Label
+                            Text="CHALLENGE"
+                            FontSize="9"
+                            FontAttributes="Bold"
+                            TextColor="#632D20"
+                            HorizontalTextAlignment="Center"/>
+                    </VerticalStackLayout>
+
+                    <!-- PRACTICE -->
+                    <VerticalStackLayout
+                        Grid.Column="3"
+                        Spacing="5"
+                        HorizontalOptions="Center">
+
+                        <Button
+                            Text="🎯"
+                            FontSize="24"
+                            WidthRequest="72"
+                            HeightRequest="62"
+                            CornerRadius="18"
+                            BackgroundColor="#EF4230"
+                            TextColor="White"/>
+
+                        <Label
+                            Text="PRACTICE"
+                            FontSize="9"
+                            FontAttributes="Bold"
+                            TextColor="#632D20"
+                            HorizontalTextAlignment="Center"/>
+                    </VerticalStackLayout>
+
+                </Grid>
+
+
+                <!-- ================= RECENT MATCH ================= -->
+
+                <Grid ColumnDefinitions="*,Auto">
+
+                    <Label
+                        Text="RECENT MATCHES"
+                        FontSize="17"
+                        FontAttributes="Bold"
+                        TextColor="#6B2116"/>
+
+                    <Label
+                        Grid.Column="1"
+                        Text="View all ›"
+                        FontSize="12"
+                        TextColor="#E8471A"
+                        VerticalOptions="Center"/>
+
+                </Grid>
+
+
+                <Border
+                    Padding="12"
+                    BackgroundColor="#FFF9EE"
+                    Stroke="#F4D2AC"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 18">
+
+                    <Grid
+                        ColumnDefinitions="Auto,*,Auto"
+                        RowDefinitions="Auto,Auto">
+
+                        <Border
+                            WidthRequest="45"
+                            HeightRequest="45"
+                            StrokeThickness="0"
+                            BackgroundColor="#EAF8E7"
+                            StrokeShape="RoundRectangle 22">
+
+                            <Label
+                                Text="🏆"
+                                FontSize="23"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"/>
+                        </Border>
+
+                        <VerticalStackLayout
+                            Grid.Column="1"
+                            Margin="10,0"
+                            Spacing="2">
+
+                            <Label
+                                Text="SudokuKing"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                TextColor="#3A1711"/>
+
+                            <Label
+                                Text="Hard • 03:42"
+                                FontSize="10"
+                                TextColor="#8E6B5C"/>
+
+                        </VerticalStackLayout>
+
+                        <Label
+                            Grid.Column="2"
+                            Text="+25"
+                            FontSize="17"
+                            FontAttributes="Bold"
+                            TextColor="#20A443"
+                            VerticalOptions="Center"/>
+
+                        <Label
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="10,3,0,0"
+                            Text="Victory"
+                            FontSize="10"
+                            TextColor="#20A443"/>
+
+                    </Grid>
+
+                </Border>
+
+
+                <!-- RANKING PREVIEW -->
+
+                <Grid ColumnDefinitions="*,Auto">
+
+                    <Label
+                        Text="LEADERBOARD"
+                        FontSize="17"
+                        FontAttributes="Bold"
+                        TextColor="#6B2116"/>
+
+                    <Label
+                        Grid.Column="1"
+                        Text="View all ›"
+                        FontSize="12"
+                        TextColor="#E8471A"
+                        VerticalOptions="Center"/>
+
+                </Grid>
+
+
+                <Border
+                    Padding="14"
+                    BackgroundColor="#FFF9EE"
+                    Stroke="#F4D2AC"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 18">
+
+                    <VerticalStackLayout Spacing="12">
+
+                        <!-- 1 -->
+                        <Grid ColumnDefinitions="30,Auto,*,Auto">
+
+                            <Label
+                                Text="🥇"
+                                FontSize="20"
+                                VerticalOptions="Center"/>
+
+                            <Border
+                                Grid.Column="1"
+                                WidthRequest="36"
+                                HeightRequest="36"
+                                StrokeThickness="0"
+                                BackgroundColor="#FFE0A7"
+                                StrokeShape="RoundRectangle 18">
+
+                                <Label
+                                    Text="👨"
+                                    FontSize="21"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center"/>
+                            </Border>
+
+                            <Label
+                                Grid.Column="2"
+                                Margin="10,0"
+                                Text="SudokuKing"
+                                FontSize="13"
+                                FontAttributes="Bold"
+                                TextColor="#432018"
+                                VerticalOptions="Center"/>
+
+                            <Label
+                                Grid.Column="3"
+                                Text="2310"
+                                FontSize="13"
+                                FontAttributes="Bold"
+                                TextColor="#D73A1B"
+                                VerticalOptions="Center"/>
+
+                        </Grid>
+
+
+                        <!-- 2 -->
+                        <Grid ColumnDefinitions="30,Auto,*,Auto">
+
+                            <Label
+                                Text="🥈"
+                                FontSize="20"
+                                VerticalOptions="Center"/>
+
+                            <Border
+                                Grid.Column="1"
+                                WidthRequest="36"
+                                HeightRequest="36"
+                                StrokeThickness="0"
+                                BackgroundColor="#F1E6DC"
+                                StrokeShape="RoundRectangle 18">
+
+                                <Label
+                                    Text="👩"
+                                    FontSize="21"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center"/>
+                            </Border>
+
+                            <Label
+                                Grid.Column="2"
+                                Margin="10,0"
+                                Text="SudokuMaster"
+                                FontSize="13"
+                                FontAttributes="Bold"
+                                TextColor="#432018"
+                                VerticalOptions="Center"/>
+
+                            <Label
+                                Grid.Column="3"
+                                Text="2250"
+                                FontSize="13"
+                                FontAttributes="Bold"
+                                TextColor="#D73A1B"
+                                VerticalOptions="Center"/>
+
+                        </Grid>
+
+
+                        <!-- YOU -->
+                        <Border
+                            Padding="8"
+                            BackgroundColor="#FFE2B5"
+                            StrokeThickness="0"
+                            StrokeShape="RoundRectangle 12">
+
+                            <Grid ColumnDefinitions="30,Auto,*,Auto">
+
+                                <Label
+                                    Text="18"
+                                    FontSize="12"
+                                    FontAttributes="Bold"
+                                    TextColor="#8A4026"
+                                    VerticalOptions="Center"/>
+
+                                <Border
+                                    Grid.Column="1"
+                                    WidthRequest="36"
+                                    HeightRequest="36"
+                                    StrokeThickness="0"
+                                    BackgroundColor="#FF9A27"
+                                    StrokeShape="RoundRectangle 18">
+
+                                    <Label
+                                        Text="👦"
+                                        FontSize="21"
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center"/>
+                                </Border>
+
+                                <Label
+                                    Grid.Column="2"
+                                    Margin="10,0"
+                                    Text="MinhTuan"
+                                    FontSize="13"
+                                    FontAttributes="Bold"
+                                    TextColor="#8A2918"
+                                    VerticalOptions="Center"/>
+
+                                <Label
+                                    Grid.Column="3"
+                                    Text="1850"
+                                    FontSize="13"
+                                    FontAttributes="Bold"
+                                    TextColor="#E33A16"
+                                    VerticalOptions="Center"/>
+
+                            </Grid>
+
+                        </Border>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+            </VerticalStackLayout>
+
+        </ScrollView>
+
+
+        <!-- ================= BOTTOM NAV ================= -->
+
+        <Border
+            Grid.Row="1"
+            Padding="8,7"
+            BackgroundColor="#FFF9ED"
+            Stroke="#EACDB0"
+            StrokeThickness="1">
+
+            <Grid ColumnDefinitions="*,*,*,*">
+
+                <!-- HOME -->
+                <VerticalStackLayout
+                    Spacing="2"
+                    HorizontalOptions="Center">
+
+                    <Label
+                        Text="⌂"
+                        FontSize="25"
+                        TextColor="#E83D1A"
+                        HorizontalTextAlignment="Center"/>
+
+                    <Label
+                        Text="Home"
+                        FontSize="9"
+                        FontAttributes="Bold"
+                        TextColor="#E83D1A"
+                        HorizontalTextAlignment="Center"/>
+
+                </VerticalStackLayout>
+
+
+                <!-- BATTLE -->
+                <VerticalStackLayout
+                    Grid.Column="1"
+                    Spacing="2"
+                    HorizontalOptions="Center">
+
+                    <Label
+                        Text="⚔"
+                        FontSize="23"
+                        TextColor="#765E52"
+                        HorizontalTextAlignment="Center"/>
+
+                    <Label
+                        Text="Battle"
+                        FontSize="9"
+                        TextColor="#765E52"
+                        HorizontalTextAlignment="Center"/>
+
+                </VerticalStackLayout>
+
+
+                <!-- RANKING -->
+                <VerticalStackLayout
+                    Grid.Column="2"
+                    Spacing="2"
+                    HorizontalOptions="Center">
+
+                    <Label
+                        Text="🏆"
+                        FontSize="21"
+                        HorizontalTextAlignment="Center"/>
+
+                    <Label
+                        Text="Ranking"
+                        FontSize="9"
+                        TextColor="#765E52"
+                        HorizontalTextAlignment="Center"/>
+
+                </VerticalStackLayout>
+
+
+                <!-- PROFILE -->
+                <VerticalStackLayout
+                    Grid.Column="3"
+                    Spacing="2"
+                    HorizontalOptions="Center">
+
+                    <Label
+                        Text="👤"
+                        FontSize="21"
+                        HorizontalTextAlignment="Center"/>
+
+                    <Label
+                        Text="Profile"
+                        FontSize="9"
+                        TextColor="#765E52"
+                        HorizontalTextAlignment="Center"/>
+
+                </VerticalStackLayout>
+
+            </Grid>
+
+        </Border>
+
+    </Grid>
+
+</ContentPage>

@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 
 <ContentPage
+    x:Class="Sudoku.Mobile.Views.ConnectionPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Sudoku.Mobile.Views.ConnectionPage"
+    Shell.NavBarIsVisible="False"
     BackgroundColor="#17131A">
 
     <Grid Padding="24">
@@ -13,140 +14,203 @@
             VerticalOptions="Center">
 
             <!-- TITLE -->
-
             <Label
                 Text="CONNECTION STATES"
-                FontSize="24"
+                FontSize="25"
                 FontAttributes="Bold"
                 TextColor="#FFFFFF"
-                HorizontalTextAlignment="Center" />
+                HorizontalTextAlignment="Center"/>
 
             <Label
                 Text="Mobile - Server"
                 FontSize="14"
                 TextColor="#BDB6C5"
-                HorizontalTextAlignment="Center"
-                Margin="0,-10,0,20" />
+                HorizontalTextAlignment="Center"/>
 
 
             <!-- CONNECTION CARD -->
-
             <Border
+                Padding="18"
                 BackgroundColor="#211C25"
                 Stroke="#403743"
                 StrokeThickness="1"
-                Padding="18">
+                StrokeShape="RoundRectangle 18">
 
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="18" />
-                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="14">
 
-                <VerticalStackLayout Spacing="16">
+                    <Label
+                        Text="SERVER CONNECTION"
+                        FontSize="14"
+                        FontAttributes="Bold"
+                        TextColor="#FFFFFF"/>
 
-                    <!-- STATUS -->
-
+                    <!-- CONNECTING -->
                     <Grid ColumnDefinitions="Auto,*">
 
-                        <Border
-                            WidthRequest="42"
-                            HeightRequest="42"
-                            BackgroundColor="#28222D"
-                            StrokeThickness="0">
+                        <Label
+                            Text="🔵"
+                            FontSize="18"/>
 
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="21" />
-                            </Border.StrokeShape>
-
-                            <Label
-                                Text="●"
-                                FontSize="18"
-                                TextColor="#FFB000"
-                                HorizontalTextAlignment="Center"
-                                VerticalTextAlignment="Center" />
-
-                        </Border>
-
-                        <VerticalStackLayout
+                        <Label
                             Grid.Column="1"
-                            Margin="14,0,0,0"
-                            VerticalOptions="Center">
-
-                            <Label
-                                Text="{Binding Status}"
-                                FontSize="17"
-                                FontAttributes="Bold"
-                                TextColor="#FFFFFF" />
-
-                            <Label
-                                Text="Checking server connection..."
-                                FontSize="12"
-                                TextColor="#AFA7B5" />
-
-                        </VerticalStackLayout>
+                            Margin="10,0,0,0"
+                            Text="CONNECTING..."
+                            FontSize="13"
+                            TextColor="#FFFFFF"
+                            VerticalOptions="Center"/>
 
                     </Grid>
 
 
-                    <!-- STATUS MESSAGE -->
+                    <!-- SEARCHING -->
+                    <Grid ColumnDefinitions="Auto,*">
 
-                    <Border
-                        BackgroundColor="#18141B"
-                        Stroke="#38313D"
-                        StrokeThickness="1"
-                        Padding="14">
+                        <Label
+                            Text="🟡"
+                            FontSize="18"/>
 
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="12" />
-                        </Border.StrokeShape>
+                        <Label
+                            Grid.Column="1"
+                            Margin="10,0,0,0"
+                            Text="SEARCHING FOR OPPONENT..."
+                            FontSize="13"
+                            TextColor="#FFFFFF"
+                            VerticalOptions="Center"/>
 
-                        <VerticalStackLayout Spacing="8">
-
-                            <Label
-                                Text="SERVER"
-                                FontSize="11"
-                                FontAttributes="Bold"
-                                TextColor="#FFB000" />
-
-                            <Label
-                                Text="Sudoku Server"
-                                FontSize="15"
-                                TextColor="#FFFFFF" />
-
-                            <Label
-                                Text="{Binding Status}"
-                                FontSize="13"
-                                TextColor="#BDB6C5" />
-
-                        </VerticalStackLayout>
-
-                    </Border>
+                    </Grid>
 
 
-                    <!-- RETRY BUTTON -->
+                    <!-- FOUND -->
+                    <Grid ColumnDefinitions="Auto,*">
 
-                    <Button
-                        Text="CHECK CONNECTION"
-                        HeightRequest="52"
-                        CornerRadius="26"
-                        BackgroundColor="#F4511E"
-                        TextColor="#FFFFFF"
-                        FontAttributes="Bold"
-                        FontSize="14"
-                        Clicked="CheckConnection_Clicked" />
+                        <Label
+                            Text="🟢"
+                            FontSize="18"/>
+
+                        <Label
+                            Grid.Column="1"
+                            Margin="10,0,0,0"
+                            Text="OPPONENT FOUND!"
+                            FontSize="13"
+                            TextColor="#FFFFFF"
+                            VerticalOptions="Center"/>
+
+                    </Grid>
+
+
+                    <!-- RECONNECTING -->
+                    <Grid ColumnDefinitions="Auto,*">
+
+                        <Label
+                            Text="🔄"
+                            FontSize="18"/>
+
+                        <Label
+                            Grid.Column="1"
+                            Margin="10,0,0,0"
+                            Text="RECONNECTING..."
+                            FontSize="13"
+                            TextColor="#FFFFFF"
+                            VerticalOptions="Center"/>
+
+                    </Grid>
+
+
+                    <!-- RESTORED -->
+                    <Grid ColumnDefinitions="Auto,*">
+
+                        <Label
+                            Text="✅"
+                            FontSize="18"/>
+
+                        <Label
+                            Grid.Column="1"
+                            Margin="10,0,0,0"
+                            Text="CONNECTION RESTORED"
+                            FontSize="13"
+                            TextColor="#FFFFFF"
+                            VerticalOptions="Center"/>
+
+                    </Grid>
+
+
+                    <!-- DISCONNECTED -->
+                    <Grid ColumnDefinitions="Auto,*">
+
+                        <Label
+                            Text="🔴"
+                            FontSize="18"/>
+
+                        <Label
+                            Grid.Column="1"
+                            Margin="10,0,0,0"
+                            Text="OPPONENT DISCONNECTED"
+                            FontSize="13"
+                            TextColor="#FFFFFF"
+                            VerticalOptions="Center"/>
+
+                    </Grid>
+
+
+                    <!-- SERVER ERROR -->
+                    <Grid ColumnDefinitions="Auto,*">
+
+                        <Label
+                            Text="⛔"
+                            FontSize="18"/>
+
+                        <Label
+                            Grid.Column="1"
+                            Margin="10,0,0,0"
+                            Text="SERVER ERROR"
+                            FontSize="13"
+                            TextColor="#FF655D"
+                            VerticalOptions="Center"/>
+
+                    </Grid>
+
+
+                    <!-- TIME UP -->
+                    <Grid ColumnDefinitions="Auto,*">
+
+                        <Label
+                            Text="🟡"
+                            FontSize="18"/>
+
+                        <Label
+                            Grid.Column="1"
+                            Margin="10,0,0,0"
+                            Text="TIME'S UP!"
+                            FontSize="13"
+                            TextColor="#FFFFFF"
+                            VerticalOptions="Center"/>
+
+                    </Grid>
 
                 </VerticalStackLayout>
 
             </Border>
 
 
-            <!-- INFORMATION -->
+            <!-- CHECK BUTTON -->
+            <Button
+                Text="CHECK CONNECTION"
+                HeightRequest="52"
+                CornerRadius="26"
+                BackgroundColor="#FF4A22"
+                TextColor="White"
+                FontAttributes="Bold"
+                FontSize="14"
+                Clicked="CheckConnection_Clicked"/>
 
+
+            <!-- STATUS -->
             <Label
-                Text="The app will connect to the Sudoku Server before starting a battle."
+                x:Name="StatusLabel"
+                Text="Ready to connect"
                 FontSize="12"
-                TextColor="#8F8796"
-                HorizontalTextAlignment="Center"
-                Margin="10,5,10,0" />
+                TextColor="#BDB6C5"
+                HorizontalTextAlignment="Center"/>
 
         </VerticalStackLayout>
 

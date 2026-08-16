@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="Sudoku.Mobile.Views.OpponentFoundPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Shell.NavBarIsVisible="False"
+    BackgroundColor="#FFF3DF">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- HEADER -->
+        <Grid
+            Grid.Row="0"
+            Padding="18,15"
+            ColumnDefinitions="Auto,*,Auto">
+
+            <Button
+                Text="‹"
+                FontSize="34"
+                WidthRequest="45"
+                HeightRequest="45"
+                Padding="0"
+                BackgroundColor="Transparent"
+                TextColor="#45180F"/>
+
+            <Label
+                Grid.Column="1"
+                Text="OPPONENT FOUND!"
+                FontSize="16"
+                FontAttributes="Bold"
+                TextColor="#9D2115"
+                HorizontalTextAlignment="Center"
+                VerticalOptions="Center"/>
+
+            <Label
+                Grid.Column="2"
+                Text="⋮"
+                FontSize="26"
+                TextColor="#45180F"
+                HorizontalTextAlignment="Center"
+                VerticalOptions="Center"/>
+
+        </Grid>
+
+
+        <!-- PLAYERS -->
+        <VerticalStackLayout
+            Grid.Row="1"
+            Padding="20"
+            Spacing="28"
+            VerticalOptions="Center">
+
+            <Grid
+                ColumnDefinitions="*,Auto,*"
+                HorizontalOptions="Center">
+
+                <!-- ALEX -->
+                <VerticalStackLayout
+                    Spacing="8"
+                    WidthRequest="120">
+
+                    <Border
+                        WidthRequest="95"
+                        HeightRequest="95"
+                        Stroke="#FF9C21"
+                        StrokeThickness="4"
+                        BackgroundColor="#FFF0D0"
+                        StrokeShape="RoundRectangle 48"
+                        HorizontalOptions="Center">
+
+                        <Label
+                            Text="👦"
+                            FontSize="55"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"/>
+                    </Border>
+
+                    <Label
+                        Text="Alex"
+                        FontSize="15"
+                        FontAttributes="Bold"
+                        TextColor="#3C1912"
+                        HorizontalTextAlignment="Center"/>
+
+                    <Label
+                        Text="LEVEL 12"
+                        FontSize="10"
+                        TextColor="#8B6252"
+                        HorizontalTextAlignment="Center"/>
+
+                </VerticalStackLayout>
+
+
+                <!-- VS -->
+                <Label
+                    Grid.Column="1"
+                    Text="VS"
+                    Margin="5,35"
+                    FontSize="28"
+                    FontAttributes="Bold"
+                    TextColor="#F0441B"
+                    VerticalOptions="Center"/>
+
+
+                <!-- OPPONENT -->
+                <VerticalStackLayout
+                    Grid.Column="2"
+                    Spacing="8"
+                    WidthRequest="120">
+
+                    <Border
+                        WidthRequest="95"
+                        HeightRequest="95"
+                        Stroke="#FF4C35"
+                        StrokeThickness="4"
+                        BackgroundColor="#FFE2D3"
+                        StrokeShape="RoundRectangle 48"
+                        HorizontalOptions="Center">
+
+                        <Label
+                            Text="👨"
+                            FontSize="55"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"/>
+                    </Border>
+
+                    <Label
+                        Text="SudokuKing"
+                        FontSize="15"
+                        FontAttributes="Bold"
+                        TextColor="#3C1912"
+                        HorizontalTextAlignment="Center"/>
+
+                    <Label
+                        Text="LEVEL 14"
+                        FontSize="10"
+                        TextColor="#8B6252"
+                        HorizontalTextAlignment="Center"/>
+
+                </VerticalStackLayout>
+
+            </Grid>
+
+
+            <!-- DIFFICULTY -->
+            <VerticalStackLayout
+                Spacing="10">
+
+                <Label
+                    Text="DIFFICULTY"
+                    FontSize="11"
+                    FontAttributes="Bold"
+                    TextColor="#8D4630"
+                    HorizontalTextAlignment="Center"/>
+
+                <Grid
+                    ColumnDefinitions="*,*,*"
+                    ColumnSpacing="8">
+
+                    <Button
+                        Text="EASY"
+                        HeightRequest="42"
+                        CornerRadius="12"
+                        BackgroundColor="#F5D6B0"
+                        TextColor="#7B3A23"
+                        FontSize="11"
+                        FontAttributes="Bold"/>
+
+                    <Button
+                        Grid.Column="1"
+                        Text="MEDIUM"
+                        HeightRequest="42"
+                        CornerRadius="12"
+                        BackgroundColor="#F34B22"
+                        TextColor="White"
+                        FontSize="11"
+                        FontAttributes="Bold"/>
+
+                    <Button
+                        Grid.Column="2"
+                        Text="HARD"
+                        HeightRequest="42"
+                        CornerRadius="12"
+                        BackgroundColor="#F5D6B0"
+                        TextColor="#7B3A23"
+                        FontSize="11"
+                        FontAttributes="Bold"/>
+
+                </Grid>
+
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+
+
+        <!-- START -->
+        <Button
+            Grid.Row="2"
+            Margin="25,0,25,28"
+            HeightRequest="55"
+            Text="🔥  START BATTLE"
+            FontSize="15"
+            FontAttributes="Bold"
+            BackgroundColor="#F0441B"
+            TextColor="White"
+            CornerRadius="28"
+            Clicked="StartBattle_Clicked"/>
+
+    </Grid>
+
+</ContentPage>

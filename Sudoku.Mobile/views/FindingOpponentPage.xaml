@@ -1,0 +1,179 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="Sudoku.Mobile.Views.FindingOpponentPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Shell.NavBarIsVisible="False"
+    BackgroundColor="#FFF3DF">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- HEADER -->
+        <Grid
+            Grid.Row="0"
+            Padding="18,15"
+            ColumnDefinitions="Auto,*,Auto">
+
+            <Button
+                Text="‹"
+                FontSize="34"
+                WidthRequest="45"
+                HeightRequest="45"
+                Padding="0"
+                BackgroundColor="Transparent"
+                TextColor="#45180F"
+                Clicked="Back_Clicked"/>
+
+            <Label
+                Grid.Column="1"
+                Text="FINDING OPPONENT..."
+                FontSize="16"
+                FontAttributes="Bold"
+                TextColor="#9D2115"
+                HorizontalTextAlignment="Center"
+                VerticalOptions="Center"/>
+
+            <Label
+                Grid.Column="2"
+                Text="⋮"
+                FontSize="26"
+                TextColor="#45180F"
+                HorizontalTextAlignment="Center"
+                VerticalOptions="Center"/>
+
+        </Grid>
+
+
+        <!-- CENTER -->
+        <VerticalStackLayout
+            Grid.Row="1"
+            Padding="25"
+            Spacing="25"
+            VerticalOptions="Center"
+            HorizontalOptions="Center">
+
+            <!-- VS CIRCLE -->
+            <Grid
+                WidthRequest="280"
+                HeightRequest="250">
+
+                <!-- decorative circles -->
+                <Ellipse
+                    WidthRequest="230"
+                    HeightRequest="230"
+                    Stroke="#F5A126"
+                    StrokeThickness="2"
+                    Opacity="0.45"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"/>
+
+                <Ellipse
+                    WidthRequest="190"
+                    HeightRequest="190"
+                    Stroke="#FFCB64"
+                    StrokeThickness="2"
+                    Opacity="0.55"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"/>
+
+
+                <!-- PLAYER -->
+                <Border
+                    WidthRequest="92"
+                    HeightRequest="92"
+                    Stroke="#FF9B20"
+                    StrokeThickness="4"
+                    BackgroundColor="#FFF0D0"
+                    StrokeShape="RoundRectangle 46"
+                    HorizontalOptions="Start"
+                    VerticalOptions="Center">
+
+                    <Label
+                        Text="👦"
+                        FontSize="55"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
+                </Border>
+
+
+                <!-- VS -->
+                <Label
+                    Text="VS"
+                    FontSize="31"
+                    FontAttributes="Bold"
+                    TextColor="#F0441B"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"/>
+
+
+                <!-- UNKNOWN -->
+                <Border
+                    WidthRequest="92"
+                    HeightRequest="92"
+                    Stroke="#D3B78F"
+                    StrokeThickness="3"
+                    BackgroundColor="#E8E0D3"
+                    StrokeShape="RoundRectangle 46"
+                    HorizontalOptions="End"
+                    VerticalOptions="Center">
+
+                    <Label
+                        Text="?"
+                        FontSize="48"
+                        FontAttributes="Bold"
+                        TextColor="#5D5B59"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
+                </Border>
+
+            </Grid>
+
+
+            <!-- TEXT -->
+            <VerticalStackLayout
+                Spacing="8">
+
+                <Label
+                    Text="Searching for a"
+                    FontSize="16"
+                    TextColor="#4A2920"
+                    HorizontalTextAlignment="Center"/>
+
+                <Label
+                    Text="worthy opponent..."
+                    FontSize="16"
+                    TextColor="#4A2920"
+                    HorizontalTextAlignment="Center"/>
+
+            </VerticalStackLayout>
+
+
+            <!-- TIMER -->
+            <Label
+                x:Name="TimerLabel"
+                Text="00:12"
+                FontSize="30"
+                FontAttributes="Bold"
+                TextColor="#26130F"
+                HorizontalTextAlignment="Center"/>
+
+        </VerticalStackLayout>
+
+
+        <!-- CANCEL -->
+        <Button
+            Grid.Row="2"
+            Margin="25,0,25,28"
+            HeightRequest="52"
+            Text="CANCEL"
+            FontSize="14"
+            FontAttributes="Bold"
+            BackgroundColor="#F52E26"
+            TextColor="White"
+            CornerRadius="26"
+            Clicked="Cancel_Clicked"/>
+
+    </Grid>
+
+</ContentPage>
