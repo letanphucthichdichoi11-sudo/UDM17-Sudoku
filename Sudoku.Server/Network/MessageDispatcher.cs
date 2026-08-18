@@ -67,7 +67,7 @@ namespace Sudoku.Server.Network
                     case MessageType.LeaveRoom:
                         return await LeaveRoomAsync(request, context.Session);
                     case MessageType.StartMatch:
-                        return StartMatch(request, context.Session);
+                        return await StartMatchAsync(request, context.Session);
                     case MessageType.PlayerReady:
                         return PlayerReady(request, context.Session);
                     case MessageType.GetMatchStatus:
@@ -164,7 +164,7 @@ namespace Sudoku.Server.Network
             return Response(request, MessageType.LeaveRoom, new EmptyPayload());
         }
 
-        private Message StartMatch(Message request, ClientSession session)
+        private async Task<Message> StartMatchAsync(Message request, ClientSession session)
         {
             StartMatchRequest payload = request.ReadPayload<StartMatchRequest>();
             Guid roomId;
@@ -173,6 +173,17 @@ namespace Sudoku.Server.Network
             if (room == null || !room.Players.Any(player => player.PlayerId == session.PlayerId))
                 throw new UnauthorizedAccessException("Player does not belong to the room.");
             Match match = _games.MatchCoordinator.StartMatch(payload);
+            string opponentId = match.GetOpponent(session.PlayerId);
+            try
+            {
+                await _sessions.SendToPlayerAsync(opponentId,
+                    Message.Create(MessageType.MatchPrepared,
+                        _games.Matches.GetPlayerStatus(match.MatchId, opponentId)));
+            }
+            catch
+            {
+                // The preparing timeout will clean up a match whose opponent cannot be reached.
+            }
             return Response(request, MessageType.MatchPrepared,
                 _games.Matches.GetPlayerStatus(match.MatchId, session.PlayerId));
         }
@@ -226,6 +237,15 @@ namespace Sudoku.Server.Network
         private async void OnMatchFinished(object sender, MatchEventArgs args)
         {
             await PushStatusAsync(args.Match, MessageType.MatchFinished);
+            if (args.Match.Result != null &&
+                args.Match.Result.Reason == MatchFinishReason.PreparingTimeout)
+            {
+                if (args.Match.ConnectionA == ConnectionStatus.Disconnected)
+                    _games.Rooms.LeaveRoom(args.Match.RoomId, args.Match.PlayerAId);
+                if (args.Match.ConnectionB == ConnectionStatus.Disconnected)
+                    _games.Rooms.LeaveRoom(args.Match.RoomId, args.Match.PlayerBId);
+                await BroadcastRoomsAsync();
+            }
         }
 
         private async void OnPlayerConnectionChanged(object sender, MatchEventArgs args)
@@ -247,14 +267,17 @@ namespace Sudoku.Server.Network
                 PushPlayerStatusAsync(match, match.PlayerBId, type));
         }
 
-        private Task PushPlayerStatusAsync(Match match, string playerId, MessageType type)
+        private async Task PushPlayerStatusAsync(Match match, string playerId, MessageType type)
         {
             try
             {
-                return _sessions.SendToPlayerAsync(playerId,
+                await _sessions.SendToPlayerAsync(playerId,
                     Message.Create(type, _games.Matches.GetPlayerStatus(match.MatchId, playerId)));
             }
-            catch { return Task.FromResult(0); }
+            catch
+            {
+                // A disconnected client must not prevent state finalization or room cleanup.
+            }
         }
 
         private LobbyRoomDto MapRoom(Room room)
