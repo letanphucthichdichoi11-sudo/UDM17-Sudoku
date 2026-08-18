@@ -61,73 +61,18 @@ namespace Sudoku.Server.Tests
                 MatchId = Guid.NewGuid(),
                 RoomId = Guid.NewGuid(),
                 Puzzle = new int[81],
-                OwnBoard = new int[81],
                 Duration = MatchDurationMinutes.Five,
                 State = MatchLifecycleState.Preparing,
                 ServerUtcNow = DateTime.UtcNow
             };
             status.Puzzle[2 * 9 + 3] = 7;
-            status.OwnBoard[4 * 9 + 5] = 9;
 
             MatchStatusResponse roundTrip = JsonHelper.Deserialize<MatchStatusResponse>(
                 JsonHelper.Serialize(status));
 
             Assert.AreEqual(7, roundTrip.Puzzle[2 * 9 + 3]);
-            Assert.AreEqual(9, roundTrip.OwnBoard[4 * 9 + 5]);
-            Assert.AreEqual(81, roundTrip.OwnBoard.Length);
             Assert.IsNull(typeof(MatchStatusResponse).GetProperty("Solution"));
             Assert.IsNull(typeof(MatchStatusResponse).GetProperty("SolutionGrid"));
-        }
-
-        [TestMethod]
-        public async Task StartMatch_ReturnsPreparedToRequesterAndPushesPreparedToOpponent()
-        {
-            int port = GetAvailablePort();
-            using (var games = new GameApplicationServices())
-            using (var server = new Sudoku.Server.Network.Server(games, port))
-            using (var firstClient = new TcpClient())
-            using (var secondClient = new TcpClient())
-            {
-                Task serverTask = server.StartAsync();
-                await Task.Delay(100);
-                await firstClient.ConnectAsync(IPAddress.Loopback, port);
-                await secondClient.ConnectAsync(IPAddress.Loopback, port);
-                NetworkStream firstStream = firstClient.GetStream();
-                NetworkStream secondStream = secondClient.GetStream();
-
-                await RequestAsync(firstStream, Message.Create(MessageType.Handshake,
-                    new HandshakeRequest { PlayerId = "player-a", PlayerName = "Player A" }));
-                await RequestAsync(secondStream, Message.Create(MessageType.Handshake,
-                    new HandshakeRequest { PlayerId = "player-b", PlayerName = "Player B" }));
-
-                Message create = await RequestAsync(firstStream,
-                    Message.Create(MessageType.CreateRoom,
-                        new CreateRoomRequest { RoomName = "Duel Room" }));
-                LobbyRoomDto room = create.ReadPayload<LobbyRoomDto>();
-                await RequestAsync(secondStream, Message.Create(MessageType.JoinRoom,
-                    new RoomRequest { RoomId = room.RoomId }));
-
-                Message start = await RequestAsync(firstStream,
-                    Message.Create(MessageType.StartMatch, new StartMatchRequest
-                    {
-                        RoomId = room.RoomId.ToString(),
-                        Difficulty = SudokuDifficultyLevel.Easy,
-                        Duration = MatchDurationMinutes.Five
-                    }));
-                Message opponentPush = await ReadTypeAsync(secondStream, MessageType.MatchPrepared);
-                MatchStatusResponse requesterStatus = start.ReadPayload<MatchStatusResponse>();
-                MatchStatusResponse opponentStatus = opponentPush.ReadPayload<MatchStatusResponse>();
-
-                Assert.AreEqual(MessageType.MatchPrepared, start.Type);
-                Assert.AreEqual(requesterStatus.MatchId, opponentStatus.MatchId);
-                CollectionAssert.AreEqual(requesterStatus.Puzzle, opponentStatus.Puzzle);
-                Assert.AreEqual(81, requesterStatus.OwnBoard.Length);
-                Assert.AreEqual(81, opponentStatus.OwnBoard.Length);
-                Assert.IsTrue(requesterStatus.PreparingEndsAtUtc.HasValue);
-
-                server.Stop();
-                await serverTask;
-            }
         }
 
         [TestMethod]
@@ -188,15 +133,6 @@ namespace Sudoku.Server.Tests
             {
                 Message response = await PacketCodec.ReadMessageAsync(stream, CancellationToken.None);
                 if (response.CorrelationId == request.MessageId) return response;
-            }
-        }
-
-        private static async Task<Message> ReadTypeAsync(NetworkStream stream, MessageType type)
-        {
-            while (true)
-            {
-                Message message = await PacketCodec.ReadMessageAsync(stream, CancellationToken.None);
-                if (message.Type == type && !message.CorrelationId.HasValue) return message;
             }
         }
 

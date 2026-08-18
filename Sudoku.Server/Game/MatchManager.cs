@@ -9,7 +9,6 @@ namespace Sudoku.Server.Game
     internal sealed class MatchManager : IMatchManager
     {
         private static readonly TimeSpan DisconnectGracePeriod = TimeSpan.FromMinutes(3);
-        private static readonly TimeSpan PreparingTimeout = TimeSpan.FromSeconds(60);
         private readonly ConcurrentDictionary<Guid, Match> _matches = new ConcurrentDictionary<Guid, Match>();
         private readonly IMatchRepository _repository;
         private readonly IClock _clock;
@@ -44,7 +43,6 @@ namespace Sudoku.Server.Game
                 SolutionGrid = MatchGrid.Clone(solutionGrid),
                 TimeLimit = timeLimit,
                 Duration = duration,
-                PreparingEndsAtUtc = _clock.UtcNow.Add(PreparingTimeout),
                 State = MatchState.Preparing,
                 ConnectionA = ConnectionStatus.Connected,
                 ConnectionB = ConnectionStatus.Connected
@@ -64,7 +62,6 @@ namespace Sudoku.Server.Game
 
         public bool MarkPlayerReady(Guid matchId, string playerId)
         {
-            ProcessDueTimers(_clock.UtcNow);
             Match match = GetRequiredMatch(matchId);
             bool started = false;
             lock (match.SyncRoot)
@@ -176,22 +173,18 @@ namespace Sudoku.Server.Game
                     MatchId = match.MatchId,
                     RoomId = match.RoomId,
                     Puzzle = MatchGrid.Flatten(snapshot.OriginalPuzzle),
-                    OwnBoard = MatchGrid.Flatten(snapshot.OwnBoard),
                     State = (MatchLifecycleState)match.State,
                     Duration = match.Duration,
                     PlayerAReady = match.PlayerAReady,
                     PlayerBReady = match.PlayerBReady,
                     ServerUtcNow = snapshot.ServerUtcNow,
-                    PreparingEndsAtUtc = match.PreparingEndsAtUtc,
                     StartedAtUtc = snapshot.StartedAtUtc,
                     EndsAtUtc = snapshot.EndsAtUtc,
                     TimeLeft = snapshot.TimeLeft,
                     OwnCorrectCount = snapshot.OwnCorrectCount,
                     OwnErrorCount = snapshot.OwnErrorCount,
                     OpponentCorrectCount = snapshot.OpponentCorrectCount,
-                    OpponentErrorCount = snapshot.OpponentErrorCount,
-                    FinishReason = MapFinishReason(match.Result),
-                    WinnerPlayerId = match.Result == null ? null : match.Result.WinnerPlayerId
+                    OpponentErrorCount = snapshot.OpponentErrorCount
                 };
             }
         }
@@ -229,8 +222,7 @@ namespace Sudoku.Server.Game
             Match match = GetRequiredMatch(matchId);
             lock (match.SyncRoot)
             {
-                if ((match.State != MatchState.Preparing && match.State != MatchState.Ongoing) ||
-                    !match.IsPlayer(playerId)) return;
+                if (match.State != MatchState.Ongoing || !match.IsPlayer(playerId)) return;
                 SetConnection(match, playerId, ConnectionStatus.Disconnected, nowUtc);
                 _repository.SaveMatch(match);
             }
@@ -244,8 +236,7 @@ namespace Sudoku.Server.Game
             Match match = GetRequiredMatch(matchId);
             lock (match.SyncRoot)
             {
-                if ((match.State != MatchState.Preparing && match.State != MatchState.Ongoing) ||
-                    !match.IsPlayer(playerId)) return;
+                if (match.State != MatchState.Ongoing || !match.IsPlayer(playerId)) return;
                 SetConnection(match, playerId, ConnectionStatus.Connected, nowUtc);
                 _repository.SaveMatch(match);
             }
@@ -254,22 +245,12 @@ namespace Sudoku.Server.Game
 
         public void ProcessDueTimers(DateTime nowUtc)
         {
-            foreach (var match in _matches.Values.Where(m =>
-                m.State == MatchState.Preparing || m.State == MatchState.Ongoing).ToList())
+            foreach (var match in _matches.Values.Where(m => m.State == MatchState.Ongoing).ToList())
             {
                 var finalized = false;
                 lock (match.SyncRoot)
                 {
-                    if (match.State == MatchState.Preparing)
-                    {
-                        if (nowUtc < match.PreparingEndsAtUtc) continue;
-                        Abort(match, MatchFinishReason.PreparingTimeout, nowUtc);
-                        finalized = true;
-                        _repository.SaveMatch(match);
-                    }
-                    else if (match.State != MatchState.Ongoing) continue;
-                    else
-                    {
+                    if (match.State != MatchState.Ongoing) continue;
                     DateTime? disconnectDeadlineA = GetDisconnectDeadline(
                         match.ConnectionA, match.DisconnectedAtA);
                     DateTime? disconnectDeadlineB = GetDisconnectDeadline(
@@ -310,7 +291,6 @@ namespace Sudoku.Server.Game
                         finalized = true;
                     }
                     if (finalized) _repository.SaveMatch(match);
-                    }
                 }
                 if (finalized) ArchiveFinishedMatch(match);
             }
@@ -349,19 +329,6 @@ namespace Sudoku.Server.Game
         private static TimeSpan GetTimeLeft(Match match, DateTime now) { if (!match.EndsAtUtc.HasValue) return match.TimeLimit; var left = match.EndsAtUtc.Value - now; return left < TimeSpan.Zero ? TimeSpan.Zero : left; }
         private static bool TryFinishExpired(Match match, DateTime now) { if (match.State != MatchState.Ongoing || !match.EndsAtUtc.HasValue || now < match.EndsAtUtc.Value) return false; Finish(match, DetermineWinner(match), MatchFinishReason.TimeUp, now); return true; }
         private static string DetermineWinner(Match match) { if (match.BoardA.CorrectCount != match.BoardB.CorrectCount) return match.BoardA.CorrectCount > match.BoardB.CorrectCount ? match.PlayerAId : match.PlayerBId; if (match.BoardA.ErrorCount != match.BoardB.ErrorCount) return match.BoardA.ErrorCount < match.BoardB.ErrorCount ? match.PlayerAId : match.PlayerBId; return null; }
-        private static MatchFinishReasonCode? MapFinishReason(MatchResult result)
-        {
-            if (result == null) return null;
-            switch (result.Reason)
-            {
-                case MatchFinishReason.Completed: return MatchFinishReasonCode.Completed;
-                case MatchFinishReason.TimeUp: return MatchFinishReasonCode.TimeUp;
-                case MatchFinishReason.TechnicalWinDisconnect: return MatchFinishReasonCode.TechnicalWinDisconnect;
-                case MatchFinishReason.BothDisconnected: return MatchFinishReasonCode.BothDisconnected;
-                case MatchFinishReason.PreparingTimeout: return MatchFinishReasonCode.PreparingTimeout;
-                default: return null;
-            }
-        }
         private static void Finish(Match match, string winner, MatchFinishReason reason, DateTime now) { match.State = MatchState.Finished; match.Result = new MatchResult { WinnerPlayerId = winner, Reason = reason, FinishedAtUtc = now }; }
         private static void Abort(Match match, MatchFinishReason reason, DateTime now) { match.State = MatchState.Aborted; match.Result = new MatchResult { Reason = reason, FinishedAtUtc = now }; }
         private static void SetConnection(Match match, string playerId, ConnectionStatus status, DateTime now)

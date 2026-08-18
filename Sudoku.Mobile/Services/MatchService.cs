@@ -7,9 +7,7 @@ namespace Sudoku.Mobile.Services;
 public sealed class MatchService
 {
     private readonly TcpGameClient _client;
-    private Guid? _activeMatchId;
 
-    public event EventHandler<MatchStatusResponse>? MatchPrepared;
     public event EventHandler<MatchStatusResponse>? MatchStarted;
     public event EventHandler<MatchStatusResponse>? MatchUpdated;
     public event EventHandler<MatchStatusResponse>? MatchFinished;
@@ -19,7 +17,6 @@ public sealed class MatchService
     {
         _client = client;
         _client.EventReceived += OnEventReceived;
-        _client.Reconnected += OnReconnected;
     }
 
     public Task<MatchStatusResponse> StartMatchAsync(
@@ -27,16 +24,7 @@ public sealed class MatchService
         SudokuDifficultyLevel difficulty,
         MatchDurationMinutes duration)
     {
-        return StartAndTrackMatchAsync(
-            roomId, difficulty, duration);
-    }
-
-    private async Task<MatchStatusResponse> StartAndTrackMatchAsync(
-        Guid roomId,
-        SudokuDifficultyLevel difficulty,
-        MatchDurationMinutes duration)
-    {
-        MatchStatusResponse response = await _client.RequestAsync<StartMatchRequest, MatchStatusResponse>(
+        return _client.RequestAsync<StartMatchRequest, MatchStatusResponse>(
             MessageType.StartMatch,
             new StartMatchRequest
             {
@@ -44,8 +32,6 @@ public sealed class MatchService
                 Difficulty = difficulty,
                 Duration = duration
             });
-        _activeMatchId = response.MatchId;
-        return response;
     }
 
     public Task<MatchStatusResponse> ReadyAsync(Guid matchId)
@@ -84,51 +70,18 @@ public sealed class MatchService
     {
         switch (message.Type)
         {
-            case MessageType.MatchPrepared:
-                MatchStatusResponse prepared = message.ReadPayload<MatchStatusResponse>();
-                _activeMatchId = prepared.MatchId;
-                MatchPrepared?.Invoke(this, prepared);
-                break;
             case MessageType.MatchStarted:
-                MatchStatusResponse started = message.ReadPayload<MatchStatusResponse>();
-                _activeMatchId = started.MatchId;
-                MatchStarted?.Invoke(this, started);
+                MatchStarted?.Invoke(this, message.ReadPayload<MatchStatusResponse>());
                 break;
             case MessageType.MatchStatusUpdated:
                 MatchUpdated?.Invoke(this, message.ReadPayload<MatchStatusResponse>());
                 break;
             case MessageType.MatchFinished:
-                MatchStatusResponse finished = message.ReadPayload<MatchStatusResponse>();
-                MatchFinished?.Invoke(this, finished);
-                _activeMatchId = null;
+                MatchFinished?.Invoke(this, message.ReadPayload<MatchStatusResponse>());
                 break;
             case MessageType.OpponentProgressUpdated:
                 OpponentProgressUpdated?.Invoke(this, message.ReadPayload<MoveResultResponse>());
                 break;
-        }
-    }
-
-    private async void OnReconnected(object? sender, EventArgs args)
-    {
-        if (!_activeMatchId.HasValue) return;
-        try
-        {
-            MatchStatusResponse status = await GetStatusAsync(_activeMatchId.Value);
-            if (status.State == MatchLifecycleState.Finished ||
-                status.State == MatchLifecycleState.Aborted ||
-                status.State == MatchLifecycleState.Archived)
-            {
-                MatchFinished?.Invoke(this, status);
-                _activeMatchId = null;
-            }
-            else
-            {
-                MatchUpdated?.Invoke(this, status);
-            }
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine("Could not restore active match after reconnect: " + exception.Message);
         }
     }
 }

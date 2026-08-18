@@ -6,7 +6,7 @@ namespace Sudoku.Server.Game
 {
     internal enum MatchState { Preparing, Ongoing, Finished, Aborted, Archived }
     internal enum ConnectionStatus { Connected, Disconnected }
-    internal enum MatchFinishReason { Completed, TimeUp, TechnicalWinDisconnect, BothDisconnected, ServerRestart, PreparingTimeout }
+    internal enum MatchFinishReason { Completed, TimeUp, TechnicalWinDisconnect, BothDisconnected, ServerRestart }
     internal enum MoveErrorCode { None, MatchNotFound, MatchNotOngoing, MatchExpired, NotAPlayer, DuplicateMoveNotFound, OutOfRange, GivenCellLocked, InvalidValue, IncorrectValue }
 
     internal sealed class PlayerBoardState
@@ -42,7 +42,6 @@ namespace Sudoku.Server.Game
         public PlayerBoardState BoardB { get; set; }
         public TimeSpan TimeLimit { get; set; }
         public MatchDurationMinutes Duration { get; set; }
-        public DateTime PreparingEndsAtUtc { get; set; }
         public DateTime? StartedAtUtc { get; set; }
         public DateTime? EndsAtUtc { get; set; }
         public bool PlayerAReady { get; set; }
