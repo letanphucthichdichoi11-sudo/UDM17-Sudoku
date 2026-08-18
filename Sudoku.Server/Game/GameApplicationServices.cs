@@ -5,6 +5,7 @@ namespace Sudoku.Server.Game
         public RoomManager Rooms { get; private set; }
         public MatchManager Matches { get; private set; }
         public MatchCoordinator MatchCoordinator { get; private set; }
+        internal IClock Clock { get; private set; }
         private readonly MatchTimerService _timerService;
 
         public GameApplicationServices()
@@ -15,6 +16,7 @@ namespace Sudoku.Server.Game
         public GameApplicationServices(IMatchRepository matchRepository)
         {
             IClock clock = new SystemClock();
+            Clock = clock;
             Rooms = new RoomManager();
             Matches = new MatchManager(matchRepository, clock);
             MatchCoordinator = new MatchCoordinator(

@@ -42,7 +42,7 @@ namespace Sudoku.Shared.Models
     {
         public Guid MatchId { get; set; }
         public Guid RoomId { get; set; }
-        public int[,] Puzzle { get; set; }
+        public int[] Puzzle { get; set; }
         public MatchLifecycleState State { get; set; }
         public MatchDurationMinutes Duration { get; set; }
         public bool PlayerAReady { get; set; }

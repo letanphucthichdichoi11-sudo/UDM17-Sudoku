@@ -63,6 +63,8 @@
     <Compile Include="Game\SudokuGridValidator.cs" />
     <Compile Include="Game\MatchManager.cs" />
     <Compile Include="Network\ClientHandler.cs" />
+    <Compile Include="Network\MessageDispatcher.cs" />
+    <Compile Include="Network\SessionManager.cs" />
     <Compile Include="Network\Server.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -15,6 +15,16 @@ public class LobbyViewModel
     public LobbyViewModel(LobbyService lobbyService)
     {
         _lobbyService = lobbyService;
+        _lobbyService.RoomsUpdated += OnRoomsUpdated;
+    }
+
+    private void OnRoomsUpdated(object? sender, List<LobbyRoom> rooms)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            Rooms.Clear();
+            foreach (LobbyRoom room in rooms) Rooms.Add(room);
+        });
     }
 
     public async Task LoadRoomsAsync()

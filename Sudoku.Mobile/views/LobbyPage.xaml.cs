@@ -11,9 +11,7 @@ public partial class LobbyPage : ContentPage
     {
         InitializeComponent();
 
-        var apiClient = new Network.ApiClient();
-
-        var lobbyService = new LobbyService(apiClient);
+        var lobbyService = new LobbyService(Network.TcpGameClient.Shared);
 
         _viewModel = new LobbyViewModel(lobbyService);
 
