@@ -83,6 +83,72 @@ namespace Sudoku.Server.Tests
         }
 
         [TestMethod]
+        public void PreparingTimeout_AtSixtySecondsAbortsAndPublishesOnce()
+        {
+            TestContext context = CreateMatch(MatchDurationMinutes.Five);
+            int abortedEvents = 0;
+            int archivedEvents = 0;
+            context.Manager.MatchAborted += (sender, args) => abortedEvents++;
+            context.Manager.MatchArchived += (sender, args) => archivedEvents++;
+
+            Assert.AreEqual(context.Clock.UtcNow.AddSeconds(60), context.Match.PreparingEndsAtUtc);
+            context.Manager.ProcessDueTimers(context.Match.PreparingEndsAtUtc.AddTicks(-1));
+            Assert.AreEqual(MatchState.Preparing, context.Match.State);
+
+            context.Manager.ProcessDueTimers(context.Match.PreparingEndsAtUtc);
+            context.Manager.ProcessDueTimers(context.Match.PreparingEndsAtUtc.AddSeconds(1));
+
+            Assert.AreEqual(MatchState.Archived, context.Match.State);
+            Assert.AreEqual(MatchFinishReason.PreparingTimeout, context.Match.Result.Reason);
+            Assert.AreEqual(1, abortedEvents);
+            Assert.AreEqual(1, archivedEvents);
+        }
+
+        [TestMethod]
+        public void ReadyAtPreparingDeadline_DoesNotStartExpiredMatch()
+        {
+            TestContext context = CreateMatch(MatchDurationMinutes.Five);
+            context.Manager.MarkPlayerReady(context.Match.MatchId, "a");
+            context.Clock.UtcNow = context.Match.PreparingEndsAtUtc;
+
+            Assert.IsFalse(context.Manager.MarkPlayerReady(context.Match.MatchId, "b"));
+            Assert.AreEqual(MatchState.Archived, context.Match.State);
+            Assert.AreEqual(MatchFinishReason.PreparingTimeout, context.Match.Result.Reason);
+        }
+
+        [TestMethod]
+        public void PreparingReconnect_DoesNotExtendDeadline()
+        {
+            TestContext context = CreateMatch(MatchDurationMinutes.Five);
+            DateTime originalDeadline = context.Match.PreparingEndsAtUtc;
+            context.Manager.HandleDisconnect(context.Match.MatchId, "a", context.Clock.UtcNow.AddSeconds(10));
+            context.Manager.HandleReconnect(context.Match.MatchId, "a", context.Clock.UtcNow.AddSeconds(20));
+
+            Assert.AreEqual(ConnectionStatus.Connected, context.Match.ConnectionA);
+            Assert.AreEqual(originalDeadline, context.Match.PreparingEndsAtUtc);
+            context.Manager.ProcessDueTimers(originalDeadline);
+            Assert.AreEqual(MatchFinishReason.PreparingTimeout, context.Match.Result.Reason);
+        }
+
+        [TestMethod]
+        public void PlayerStatus_ContainsCurrentOwnBoardWithoutOpponentBoard()
+        {
+            TestContext context = CreateStartedMatch(MatchDurationMinutes.Five);
+            int row;
+            int column;
+            FindEmptyCell(context.Match.OriginalPuzzle, out row, out column);
+            context.Manager.SubmitMove(context.Match.MatchId, "a", "restore-move",
+                row, column, context.Match.SolutionGrid[row, column]);
+
+            MatchStatusResponse playerA = context.Manager.GetPlayerStatus(context.Match.MatchId, "a");
+            MatchStatusResponse playerB = context.Manager.GetPlayerStatus(context.Match.MatchId, "b");
+
+            Assert.AreEqual(context.Match.SolutionGrid[row, column], playerA.OwnBoard[row * 9 + column]);
+            Assert.AreEqual(0, playerB.OwnBoard[row * 9 + column]);
+            Assert.IsNull(typeof(MatchStatusResponse).GetProperty("OpponentBoard"));
+        }
+
+        [TestMethod]
         public void Deadline_AtExactEndFinishesMatchAndRejectsMove()
         {
             TestContext context = CreateStartedMatch(MatchDurationMinutes.Five);
