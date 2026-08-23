@@ -7,10 +7,16 @@
     xmlns:views="clr-namespace:Sudoku.Mobile.Views"
     Shell.FlyoutBehavior="Disabled">
 
-    <!-- Trang Đăng nhập của bạn sẽ hiển thị đầu tiên -->
+    <!-- Trang Đăng nhập -->
     <ShellContent
         Title="Login"
         ContentTemplate="{DataTemplate local:LoginPage}"
         Route="LoginPage" />
+
+    <!-- TRANG LOBBY -->
+    <ShellContent
+        Title="Lobby"
+        ContentTemplate="{DataTemplate views:LobbyPage}" 
+        Route="LobbyPage" />
 
 </Shell>

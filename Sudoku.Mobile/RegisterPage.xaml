@@ -120,7 +120,7 @@
                         <VerticalStackLayout x:Name="OtpFormLayout" IsVisible="False" Spacing="20">
 
                             <!-- Nhớ xuất file ảnh icon hòm thư này từ Figma nhé -->
-                            <Image Source="icon_mailbox.png" HeightRequest="85" WidthRequest="85" HorizontalOptions="Center" Margin="0,-85,0,10" Aspect="AspectFit" />
+                            <Image Source="icon_mailbox.png" HeightRequest="85" WidthRequest="85" HorizontalOptions="Center" Margin="0,-20,0,-20" Aspect="AspectFit" />
 
                             <Label Text="Mailbox Check!" FontSize="28" FontAttributes="Bold" HorizontalOptions="Center" TextColor="#7C3AED" />
                             <Label Text="Enter the 6-digit code we sent you" FontSize="14" HorizontalOptions="Center" TextColor="#9CA3AF" Margin="0,-5,0,15" />

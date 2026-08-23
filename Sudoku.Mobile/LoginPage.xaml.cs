@@ -21,7 +21,7 @@ public partial class LoginPage : ContentPage
         if (DateTime.Now < _lockoutEndTime)
         {
             int remain = (int)(_lockoutEndTime - DateTime.Now).TotalSeconds;
-            await DisplayAlert("Khóa tạm thời", $"Bạn đã nhập sai quá nhiều. Thử lại sau {remain} giây.", "OK");
+            await DisplayAlertAsync("Khóa tạm thời", $"Bạn đã nhập sai quá nhiều. Thử lại sau {remain} giây.", "OK");
             return;
         }
 
@@ -30,7 +30,7 @@ public partial class LoginPage : ContentPage
 
         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
         {
-            await DisplayAlert("Lỗi", "Vui lòng nhập đầy đủ Email/Username và Mật khẩu.", "OK");
+            await DisplayAlertAsync("Lỗi", "Vui lòng nhập đầy đủ Email/Username và Mật khẩu.", "OK");
             return;
         }
 
@@ -48,7 +48,7 @@ public partial class LoginPage : ContentPage
             {
                 await SecureStorage.Default.SetAsync("RefreshToken", response.RefreshToken);
             }
-            await Shell.Current.GoToAsync("//MainPage");
+            await Shell.Current.GoToAsync("//LobbyPage");
         }
         else
         {
@@ -56,12 +56,12 @@ public partial class LoginPage : ContentPage
             if (_failedAttempts >= 5)
             {
                 _lockoutEndTime = DateTime.Now.AddMinutes(1);
-                await DisplayAlert("Cảnh báo", "Sai thông tin quá 5 lần. Vui lòng chờ 1 phút để thử lại.", "OK");
+                await DisplayAlertAsync("Cảnh báo", "Sai thông tin quá 5 lần. Vui lòng chờ 1 phút để thử lại.", "OK");
             }
             else
             {
                 string errorMsg = response?.Message ?? "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại mạng!";
-                await DisplayAlert("Đăng nhập thất bại", errorMsg, "Thử lại");
+                await DisplayAlertAsync("Đăng nhập thất bại", errorMsg, "Thử lại");
             }
         }
 

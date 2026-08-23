@@ -28,7 +28,17 @@ namespace Sudoku.Mobile.Network
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return await response.Content.ReadFromJsonAsync<TResponse>();
+                    // 1. Đọc bức thư Backend gửi về dưới dạng chuỗi nguyên bản
+                    var jsonString = await response.Content.ReadAsStringAsync();
+
+                    // 2. Ép nó phải bỏ qua việc phân biệt chữ Hoa/chữ thường
+                    var options = new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+
+                    // 3. Dịch bức thư sang Object và trả về cho app
+                    return System.Text.Json.JsonSerializer.Deserialize<TResponse>(jsonString, options);
                 }
                 return default;
             }

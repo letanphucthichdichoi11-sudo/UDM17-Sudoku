@@ -115,7 +115,7 @@ namespace Sudoku.Api.Controllers
             _context.OtpCodes.Add(newOtp);
             await _context.SaveChangesAsync();
 
-            // 5. Gửi Email thật
+            // 5. Gửi Email 
             string subject = "Mã xác nhận đăng ký Sudoku";
             string body = $@"
                 <div style='font-family: Arial, sans-serif; padding: 20px; text-align: center; border: 1px solid #ddd; border-radius: 10px;'>
@@ -125,7 +125,17 @@ namespace Sudoku.Api.Controllers
                     <p style='color: #888;'>Mã này sẽ hết hạn trong vòng 15 phút. Vui lòng không chia sẻ cho bất kỳ ai.</p>
                 </div>";
 
-            await _emailService.SendEmailAsync(newUser.Email, subject, body);
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _emailService.SendEmailAsync(newUser.Email, subject, body);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[LỖI GỬI MAIL NGẦM]: {ex.Message}");
+                }
+            });
 
             return Ok(new BaseAuthResponse { Success = true, Message = "Đã gửi OTP qua Email của bạn." });
         }
@@ -186,7 +196,17 @@ namespace Sudoku.Api.Controllers
                     <p style='color: #888;'>Mã này sẽ hết hạn trong vòng 15 phút. Nếu bạn không yêu cầu, vui lòng bỏ qua email này.</p>
                 </div>";
 
-            await _emailService.SendEmailAsync(user.Email, subject, body);
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _emailService.SendEmailAsync(user.Email, subject, body);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[LỖI GỬI MAIL NGẦM]: {ex.Message}");
+                }
+            });
 
             return Ok(new BaseAuthResponse { Success = true, Message = "Đã gửi OTP khôi phục qua email." });
         }
