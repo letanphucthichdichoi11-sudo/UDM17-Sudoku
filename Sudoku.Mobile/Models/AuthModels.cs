@@ -21,11 +21,6 @@ public class RegisterRequest
     public string Password { get; set; }
 }
 
-public class VerifyOtpRequest
-{
-    public string Email { get; set; }
-    public string Otp { get; set; }
-}
 
 public class BaseAuthResponse
 {
@@ -33,7 +28,6 @@ public class BaseAuthResponse
     public string Message { get; set; }
 }
 
-// 2 Class đang bị thiếu gây ra lỗi của bạn:
 public class ForgotPasswordRequest
 {
     public string Email { get; set; }
@@ -44,4 +38,9 @@ public class ResetPasswordRequest
     public string Email { get; set; }
     public string Otp { get; set; }
     public string NewPassword { get; set; }
+}
+public class VerifyOtpRequest
+{
+    public string Email { get; set; }
+    public string Otp { get; set; }
 }
