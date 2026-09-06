@@ -5,127 +5,562 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Sudoku.Mobile.Views.LobbyPage"
     Title="Lobby"
-    BackgroundColor="#F5F6FA">
+    Shell.NavBarIsVisible="False"
+    BackgroundColor="#F4F0FF">
 
-    <Grid RowDefinitions="Auto,*,Auto"
-          Padding="20">
+    <Grid>
 
-        <!-- HEADER -->
-        <VerticalStackLayout Grid.Row="0"
-                             Spacing="5"
-                             Margin="0,10,0,20">
+        <!-- ================= BACKGROUND ================= -->
 
-            <Label Text="Sudoku Lobby"
-                   FontSize="30"
-                   FontAttributes="Bold"
-                   TextColor="#222222" />
+        <Image
+            Source="bg_blob.png"
+            HorizontalOptions="Start"
+            VerticalOptions="Start"
+            Margin="-60,-40,0,0"
+            WidthRequest="320"
+            Opacity="0.6"
+            Aspect="AspectFit" />
 
-            <Label Text="Chọn phòng để bắt đầu trận đấu"
-                   FontSize="15"
-                   TextColor="#777777" />
+        <Image
+            Source="bg_blob22.png"
+            HorizontalOptions="End"
+            VerticalOptions="End"
+            Margin="0,0,-50,-50"
+            WidthRequest="380"
+            Opacity="0.55"
+            Aspect="AspectFit" />
 
-        </VerticalStackLayout>
+        <Image
+            Source="mini_grid.png"
+            HorizontalOptions="End"
+            VerticalOptions="Center"
+            Margin="0,0,-20,120"
+            WidthRequest="65"
+            Rotation="-15"
+            Aspect="AspectFit" />
+
+        <Image
+            Source="mini_grid_1.png"
+            HorizontalOptions="Start"
+            VerticalOptions="End"
+            Margin="25,0,0,90"
+            WidthRequest="55"
+            Rotation="25"
+            Aspect="AspectFit" />
+
+        <Image
+            Source="confetti.png"
+            HorizontalOptions="Start"
+            VerticalOptions="Center"
+            Margin="35,180,0,0"
+            WidthRequest="15"
+            Aspect="AspectFit" />
+
+        <Image
+            Source="confetti_1.png"
+            HorizontalOptions="End"
+            VerticalOptions="Start"
+            Margin="0,150,50,0"
+            WidthRequest="20"
+            Aspect="AspectFit" />
 
 
-        <!-- DANH SÁCH ROOM -->
-        <CollectionView Grid.Row="1"
-                        ItemsSource="{Binding Rooms}"
-                        SelectionMode="None">
+        <!-- ================= MAIN ================= -->
 
-            <CollectionView.EmptyView>
-                <VerticalStackLayout
-                    VerticalOptions="Center"
-                    HorizontalOptions="Center"
-                    Spacing="10">
+        <ScrollView>
 
-                    <Label Text="Chưa có phòng nào"
-                           FontSize="20"
-                           FontAttributes="Bold"
-                           HorizontalTextAlignment="Center"
-                           TextColor="#555555" />
+            <VerticalStackLayout
+                Padding="25,35,25,30"
+                Spacing="20">
 
-                    <Label Text="Hãy tạo phòng mới để bắt đầu"
-                           FontSize="14"
-                           HorizontalTextAlignment="Center"
-                           TextColor="#888888" />
+                <!-- ================= HEADER ================= -->
 
-                </VerticalStackLayout>
-            </CollectionView.EmptyView>
-
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
+                <Grid
+                    ColumnDefinitions="Auto,*,Auto"
+                    VerticalOptions="Center">
 
                     <Border
-                        BackgroundColor="White"
-                        Stroke="#E2E2E2"
+                        Grid.Column="0"
+                        WidthRequest="58"
+                        HeightRequest="58"
+                        BackgroundColor="#F3E8FF"
+                        Stroke="#DDD6FE"
                         StrokeThickness="1"
-                        Padding="16"
-                        Margin="0,0,0,12">
+                        StrokeShape="RoundRectangle 18">
 
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="16" />
-                        </Border.StrokeShape>
-
-                        <Grid ColumnDefinitions="*,Auto"
-                              RowDefinitions="Auto,Auto,Auto"
-                              RowSpacing="8">
-
-                            <!-- TÊN ROOM -->
-                            <Label Grid.Row="0"
-                                   Grid.Column="0"
-                                   Text="{Binding RoomName}"
-                                   FontSize="19"
-                                   FontAttributes="Bold"
-                                   TextColor="#222222" />
-
-                            <!-- ROOM ID -->
-                            <Label Grid.Row="1"
-                                   Grid.Column="0"
-                                   Text="{Binding RoomId}"
-                                   FontSize="13"
-                                   TextColor="#888888" />
-
-                            <!-- SỐ PLAYER -->
-                            <Label Grid.Row="2"
-                                   Grid.Column="0"
-                                   Text="👤 1 / 2 Players"
-                                   FontSize="14"
-                                   TextColor="#555555" />
-
-                            <!-- JOIN -->
-                            <Button Grid.Row="0"
-                                    Grid.RowSpan="3"
-                                    Grid.Column="1"
-                                    Text="JOIN"
-                                    WidthRequest="90"
-                                    HeightRequest="45"
-                                    CornerRadius="12"
-                                    BackgroundColor="#6750A4"
-                                    TextColor="White"
-                                    CommandParameter="{Binding .}"
-                                    Clicked="JoinRoom_Clicked" />
-
-                        </Grid>
+                        <Image
+                            Source="mascot_badge.png"
+                            WidthRequest="48"
+                            HeightRequest="48"
+                            Aspect="AspectFit" />
 
                     </Border>
 
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
+                    <VerticalStackLayout
+                        Grid.Column="1"
+                        Margin="14,0,0,0"
+                        Spacing="1"
+                        VerticalOptions="Center">
 
-        </CollectionView>
+                        <Label
+                            Text="SUDOKU"
+                            FontSize="23"
+                            FontAttributes="Bold"
+                            TextColor="#6D28D9" />
+
+                        <Label
+                            Text="BATTLE ARENA"
+                            FontSize="12"
+                            FontAttributes="Bold"
+                            TextColor="#06B6D4" />
+
+                    </VerticalStackLayout>
+
+                    <Border
+                        Grid.Column="2"
+                        WidthRequest="48"
+                        HeightRequest="48"
+                        BackgroundColor="White"
+                        Stroke="#DDD6FE"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 16">
+
+                        <Label
+                            Text="⚙"
+                            FontSize="22"
+                            TextColor="#7C3AED"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center" />
+
+                    </Border>
+
+                </Grid>
 
 
-        <!-- CREATE ROOM -->
-        <Button Grid.Row="2"
-                Text="+  CREATE ROOM"
-                HeightRequest="55"
-                Margin="0,15,0,5"
-                CornerRadius="16"
-                FontAttributes="Bold"
-                FontSize="16"
-                BackgroundColor="#6750A4"
-                TextColor="White"
-                Clicked="CreateRoom_Clicked" />
+                <!-- ================= WELCOME ================= -->
+
+                <VerticalStackLayout
+                    Margin="5,8,0,0"
+                    Spacing="3">
+
+                    <Label
+                        Text="Ready to play?"
+                        FontSize="29"
+                        FontAttributes="Bold"
+                        TextColor="#4C1D95" />
+
+                    <Label
+                        Text="Challenge another player and solve it faster!"
+                        FontSize="14"
+                        TextColor="#8B5CF6" />
+
+                </VerticalStackLayout>
+
+
+                <!-- ================= QUICK MATCH ================= -->
+
+                <Border
+                    BackgroundColor="#7C3AED"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 28"
+                    Padding="20">
+
+                    <Border.Shadow>
+                        <Shadow
+                            Brush="#7C3AED"
+                            Opacity="0.25"
+                            Offset="0,10"
+                            Radius="20" />
+                    </Border.Shadow>
+
+                    <VerticalStackLayout
+                        Spacing="15">
+
+                        <Grid
+                            ColumnDefinitions="Auto,*"
+                            ColumnSpacing="14">
+
+                            <Border
+                                WidthRequest="55"
+                                HeightRequest="55"
+                                BackgroundColor="#8B5CF6"
+                                StrokeThickness="0"
+                                StrokeShape="RoundRectangle 18">
+
+                                <Label
+                                    Text="⚡"
+                                    FontSize="30"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center" />
+
+                            </Border>
+
+                            <VerticalStackLayout
+                                Grid.Column="1"
+                                VerticalOptions="Center"
+                                Spacing="2">
+
+                                <Label
+                                    Text="QUICK MATCH"
+                                    FontSize="20"
+                                    FontAttributes="Bold"
+                                    TextColor="White" />
+
+                                <Label
+                                    Text="Find an opponent instantly"
+                                    FontSize="12"
+                                    TextColor="#E9D5FF" />
+
+                            </VerticalStackLayout>
+
+                        </Grid>
+
+                        <!-- ĐÚNG TÊN HÀM TRONG LobbyPage.xaml.cs -->
+
+                        <Button
+                            x:Name="QuickMatchButton"
+                            Text="FIND OPPONENT  →"
+                            Clicked="OnQuickMatchClicked"
+                            HeightRequest="52"
+                            CornerRadius="18"
+                            BackgroundColor="White"
+                            TextColor="#6D28D9"
+                            FontAttributes="Bold"
+                            FontSize="15" />
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ================= CREATE / JOIN ================= -->
+
+                <Grid
+                    ColumnDefinitions="*,*"
+                    ColumnSpacing="14">
+
+                    <!-- CREATE ROOM -->
+
+                    <Border
+                        Grid.Column="0"
+                        BackgroundColor="White"
+                        Stroke="#DDD6FE"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 22"
+                        Padding="15">
+
+                        <Border.Shadow>
+                            <Shadow
+                                Brush="#7C3AED"
+                                Opacity="0.08"
+                                Offset="0,5"
+                                Radius="12" />
+                        </Border.Shadow>
+
+                        <VerticalStackLayout
+                            Spacing="8">
+
+                            <Label
+                                Text="＋"
+                                FontSize="34"
+                                TextColor="#7C3AED"
+                                HorizontalOptions="Center" />
+
+                            <Label
+                                Text="Create Room"
+                                FontSize="15"
+                                FontAttributes="Bold"
+                                TextColor="#4C1D95"
+                                HorizontalOptions="Center" />
+
+                            <Label
+                                Text="Play with a friend"
+                                FontSize="11"
+                                TextColor="#9CA3AF"
+                                HorizontalOptions="Center" />
+
+                            <Button
+                                Text="CREATE"
+                                Clicked="CreateRoom_Clicked"
+                                HeightRequest="40"
+                                CornerRadius="14"
+                                BackgroundColor="#F3E8FF"
+                                TextColor="#7C3AED"
+                                FontAttributes="Bold"
+                                FontSize="12" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+
+                    <!-- JOIN ROOM -->
+
+                    <Border
+                        Grid.Column="1"
+                        BackgroundColor="White"
+                        Stroke="#CFFAFE"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 22"
+                        Padding="15">
+
+                        <Border.Shadow>
+                            <Shadow
+                                Brush="#06B6D4"
+                                Opacity="0.08"
+                                Offset="0,5"
+                                Radius="12" />
+                        </Border.Shadow>
+
+                        <VerticalStackLayout
+                            Spacing="8">
+
+                            <Label
+                                Text="↗"
+                                FontSize="34"
+                                TextColor="#06B6D4"
+                                HorizontalOptions="Center" />
+
+                            <Label
+                                Text="Join Room"
+                                FontSize="15"
+                                FontAttributes="Bold"
+                                TextColor="#155E75"
+                                HorizontalOptions="Center" />
+
+                            <Label
+                                Text="Enter a room code"
+                                FontSize="11"
+                                TextColor="#9CA3AF"
+                                HorizontalOptions="Center" />
+
+                            <Button
+                                Text="JOIN"
+                                Clicked="JoinRoom_Clicked"
+                                HeightRequest="40"
+                                CornerRadius="14"
+                                BackgroundColor="#ECFEFF"
+                                TextColor="#0891B2"
+                                FontAttributes="Bold"
+                                FontSize="12" />
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+                </Grid>
+
+
+                <!-- ================= AVAILABLE ROOMS ================= -->
+
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#E9D5FF"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 24"
+                    Padding="18">
+
+                    <VerticalStackLayout
+                        Spacing="12">
+
+                        <Grid
+                            ColumnDefinitions="*,Auto">
+
+                            <Label
+                                Text="AVAILABLE ROOMS"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                TextColor="#7C3AED" />
+
+                            <Label
+                                Grid.Column="1"
+                                Text="● ONLINE"
+                                FontSize="10"
+                                FontAttributes="Bold"
+                                TextColor="#06B6D4" />
+
+                        </Grid>
+
+                        <!--
+                            Danh sách phòng hiện tại của ViewModel.
+                            Giữ Binding để không làm mất chức năng Lobby.
+                        -->
+
+                        <CollectionView
+                            ItemsSource="{Binding Rooms}"
+                            SelectionMode="None">
+
+                            <CollectionView.EmptyView>
+
+                                <VerticalStackLayout
+                                    Padding="10,15"
+                                    Spacing="6">
+
+                                    <Label
+                                        Text="No rooms available"
+                                        FontSize="14"
+                                        TextColor="#9CA3AF"
+                                        HorizontalOptions="Center" />
+
+                                    <Label
+                                        Text="Create a room or try Quick Match!"
+                                        FontSize="12"
+                                        TextColor="#C4B5FD"
+                                        HorizontalOptions="Center" />
+
+                                </VerticalStackLayout>
+
+                            </CollectionView.EmptyView>
+
+                            <CollectionView.ItemTemplate>
+
+                                <DataTemplate>
+
+                                    <Border
+                                        Margin="0,4"
+                                        Padding="12"
+                                        BackgroundColor="#FAF5FF"
+                                        Stroke="#E9D5FF"
+                                        StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 16">
+
+                                        <Grid
+                                            ColumnDefinitions="*,Auto"
+                                            ColumnSpacing="10">
+
+                                            <VerticalStackLayout
+                                                Spacing="2">
+
+                                                <Label
+                                                    Text="{Binding RoomName}"
+                                                    FontSize="14"
+                                                    FontAttributes="Bold"
+                                                    TextColor="#4C1D95" />
+
+                                                <Label
+                                                    Text="Room available"
+                                                    FontSize="11"
+                                                    TextColor="#9CA3AF" />
+
+                                            </VerticalStackLayout>
+
+                                            <Button
+                                                Grid.Column="1"
+                                                Text="JOIN"
+                                                CommandParameter="{Binding .}"
+                                                Clicked="JoinRoom_Clicked"
+                                                HeightRequest="38"
+                                                WidthRequest="70"
+                                                CornerRadius="13"
+                                                BackgroundColor="#7C3AED"
+                                                TextColor="White"
+                                                FontAttributes="Bold"
+                                                FontSize="11" />
+
+                                        </Grid>
+
+                                    </Border>
+
+                                </DataTemplate>
+
+                            </CollectionView.ItemTemplate>
+
+                        </CollectionView>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ================= HOW TO PLAY ================= -->
+
+                <Border
+                    BackgroundColor="White"
+                    Stroke="#E9D5FF"
+                    StrokeThickness="1"
+                    StrokeShape="RoundRectangle 22"
+                    Padding="18">
+
+                    <VerticalStackLayout
+                        Spacing="12">
+
+                        <Label
+                            Text="HOW TO PLAY"
+                            FontSize="13"
+                            FontAttributes="Bold"
+                            TextColor="#7C3AED" />
+
+                        <Grid
+                            ColumnDefinitions="Auto,*"
+                            ColumnSpacing="12">
+
+                            <Label
+                                Text="01"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                TextColor="#06B6D4" />
+
+                            <Label
+                                Grid.Column="1"
+                                Text="Find an opponent"
+                                FontSize="13"
+                                TextColor="#6B7280" />
+
+                        </Grid>
+
+                        <Grid
+                            ColumnDefinitions="Auto,*"
+                            ColumnSpacing="12">
+
+                            <Label
+                                Text="02"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                TextColor="#06B6D4" />
+
+                            <Label
+                                Grid.Column="1"
+                                Text="Both players receive the same Sudoku"
+                                FontSize="13"
+                                TextColor="#6B7280" />
+
+                        </Grid>
+
+                        <Grid
+                            ColumnDefinitions="Auto,*"
+                            ColumnSpacing="12">
+
+                            <Label
+                                Text="03"
+                                FontSize="14"
+                                FontAttributes="Bold"
+                                TextColor="#06B6D4" />
+
+                            <Label
+                                Grid.Column="1"
+                                Text="Solve it faster to win!"
+                                FontSize="13"
+                                TextColor="#6B7280" />
+
+                        </Grid>
+
+                    </VerticalStackLayout>
+
+                </Border>
+
+
+                <!-- ================= FOOTER ================= -->
+
+                <Label
+                    Text="⚡ Fast • Fair • Competitive"
+                    FontSize="12"
+                    TextColor="#A78BFA"
+                    HorizontalOptions="Center"
+                    Margin="0,0,0,10" />
+
+            </VerticalStackLayout>
+
+        </ScrollView>
 
     </Grid>
 
