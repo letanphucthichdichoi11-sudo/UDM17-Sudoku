@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using Sudoku.Mobile.Models;
 using Sudoku.Mobile.Services;
+using Sudoku.Shared.Models;
 
 namespace Sudoku.Mobile.ViewModels;
 
@@ -18,12 +19,18 @@ public class LobbyViewModel
         _lobbyService.RoomsUpdated += OnRoomsUpdated;
     }
 
-    private void OnRoomsUpdated(object? sender, List<LobbyRoom> rooms)
+    private void OnRoomsUpdated(
+        object? sender,
+        List<LobbyRoom> rooms)
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
             Rooms.Clear();
-            foreach (LobbyRoom room in rooms) Rooms.Add(room);
+
+            foreach (LobbyRoom room in rooms)
+            {
+                Rooms.Add(room);
+            }
         });
     }
 
@@ -44,7 +51,8 @@ public class LobbyViewModel
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Load Rooms Error: {ex.Message}");
+            Console.WriteLine(
+                $"Load Rooms Error: {ex.Message}");
         }
         finally
         {
@@ -71,7 +79,9 @@ public class LobbyViewModel
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Create Room Error: {ex.Message}");
+            Console.WriteLine(
+                $"Create Room Error: {ex.Message}");
+
             return null;
         }
     }
@@ -88,7 +98,9 @@ public class LobbyViewModel
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Join Room Error: {ex.Message}");
+            Console.WriteLine(
+                $"Join Room Error: {ex.Message}");
+
             return null;
         }
     }
@@ -105,8 +117,35 @@ public class LobbyViewModel
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Leave Room Error: {ex.Message}");
+            Console.WriteLine(
+                $"Leave Room Error: {ex.Message}");
+
             return false;
+        }
+    }
+
+    // ============================
+    // QUICK MATCH
+    // ============================
+
+    public async Task<MatchStatusResponse?> QuickMatchAsync(
+        string playerId,
+        string playerName,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _lobbyService.QuickMatchAsync(
+                playerId,
+                playerName,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"Quick Match Error: {ex.Message}");
+
+            return null;
         }
     }
 }

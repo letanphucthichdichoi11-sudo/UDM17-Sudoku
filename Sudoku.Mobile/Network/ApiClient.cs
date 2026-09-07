@@ -2,51 +2,68 @@
 using System.Text;
 using System.Text.Json;
 
-namespace Sudoku.Mobile.Network
+namespace Sudoku.Mobile.Network;
+
+public class ApiClient
 {
-    public class ApiClient
+    private readonly HttpClient _httpClient;
+
+    public ApiClient()
     {
-        private readonly HttpClient _httpClient;
+#if ANDROID
+        string baseUrl = "http://10.0.2.2:5243/";
+#else
+        string baseUrl = "https://localhost:7169/";
+#endif
 
-        public ApiClient()
+        _httpClient = new HttpClient
         {
-            string baseUrl = DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5243/" : "http://localhost:5243/";
+            BaseAddress = new Uri(baseUrl),
+            Timeout = TimeSpan.FromSeconds(15)
+        };
+    }
 
-            _httpClient = new HttpClient
-            {
-                BaseAddress = new Uri(baseUrl),
-                Timeout = TimeSpan.FromSeconds(10)
-            };
-        }
-
-        public async Task<TResponse> PostAsync<TRequest, TResponse>(string endpoint, TRequest data)
+    public async Task<TResponse?> PostAsync<TRequest, TResponse>(
+        string endpoint,
+        TRequest data)
+    {
+        try
         {
-            try
-            {
-                var jsonContent = new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync(endpoint, jsonContent);
+            var jsonContent = new StringContent(
+                JsonSerializer.Serialize(data),
+                Encoding.UTF8,
+                "application/json");
 
-                if (response.IsSuccessStatusCode)
+            var response = await _httpClient.PostAsync(
+                endpoint,
+                jsonContent);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonString =
+                    await response.Content.ReadAsStringAsync();
+
+                var options = new JsonSerializerOptions
                 {
-                    // 1. Đọc bức thư Backend gửi về dưới dạng chuỗi nguyên bản
-                    var jsonString = await response.Content.ReadAsStringAsync();
+                    PropertyNameCaseInsensitive = true
+                };
 
-                    // 2. Ép nó phải bỏ qua việc phân biệt chữ Hoa/chữ thường
-                    var options = new System.Text.Json.JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    };
+                return JsonSerializer.Deserialize<TResponse>(
+                    jsonString,
+                    options);
+            }
 
-                    // 3. Dịch bức thư sang Object và trả về cho app
-                    return System.Text.Json.JsonSerializer.Deserialize<TResponse>(jsonString, options);
-                }
-                return default;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[API LỖI] {ex.Message}");
-                return default;
-            }
+            Console.WriteLine(
+                $"[API] Status code: {(int)response.StatusCode}");
+
+            return default;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(
+                $"[API LỖI] {ex.GetType().Name}: {ex.Message}");
+
+            return default;
         }
     }
 }
