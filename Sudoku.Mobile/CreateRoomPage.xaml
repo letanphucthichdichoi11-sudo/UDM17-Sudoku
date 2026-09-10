@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="Sudoku.Mobile.CreateRoomPage"
+ xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+ Shell.NavBarIsVisible="False" BackgroundColor="#4C367F">
+ <Grid Padding="16">
+  <Border MaximumWidthRequest="440" Padding="30" VerticalOptions="Center" HorizontalOptions="Center"
+   BackgroundColor="White" Stroke="#337C3AED" StrokeThickness="2" StrokeShape="RoundRectangle 32">
+   <Border.Shadow><Shadow Brush="#557C3AED" Offset="0,12" Radius="28" Opacity="0.5" /></Border.Shadow>
+   <VerticalStackLayout Spacing="22">
+    <Grid ColumnDefinitions="*,Auto">
+     <VerticalStackLayout Spacing="3">
+      <Border HorizontalOptions="Start" Padding="12,5" BackgroundColor="#FAF5FF" Stroke="#F3E8FF" StrokeShape="RoundRectangle 16">
+       <Label Text="SUDOKU DUEL 1V1" FontFamily="Nunito" FontAttributes="Bold" FontSize="10" CharacterSpacing="1" TextColor="#7C3AED" />
+      </Border>
+      <Label Text="Create Room" FontFamily="Fredoka" FontAttributes="Bold" FontSize="25" TextColor="#7C3AED" />
+     </VerticalStackLayout>
+     <Button Grid.Column="1" Text="CLOSE" Clicked="OnCancelClicked" BackgroundColor="Transparent" TextColor="#C084FC" FontFamily="Nunito" FontAttributes="Bold" FontSize="11" Padding="8" />
+    </Grid>
+    <VerticalStackLayout Spacing="7">
+     <Label Text="ROOM NAME" FontFamily="Nunito" FontAttributes="Bold" FontSize="11" CharacterSpacing="1" TextColor="#64748B" />
+     <Border BackgroundColor="#FBF9FE" Stroke="#F3E8FF" StrokeThickness="2" StrokeShape="RoundRectangle 16" Padding="14,5">
+      <Entry x:Name="RoomNameEntry" Text="Nghi's Room" Placeholder="Enter room name" MaxLength="28" TextChanged="OnRoomNameChanged" FontFamily="Nunito" FontAttributes="Bold" FontSize="15" TextColor="#1E293B" BackgroundColor="Transparent" />
+     </Border>
+     <Grid ColumnDefinitions="*,Auto" Padding="4,0">
+      <Label Text="Visible to opponents in the lobby" FontFamily="Nunito" FontAttributes="Bold" FontSize="10" TextColor="#94A3B8" />
+      <Label x:Name="CharacterCountLabel" Grid.Column="1" Text="11/28" FontFamily="Nunito" FontAttributes="Bold" FontSize="10" TextColor="#94A3B8" />
+     </Grid>
+    </VerticalStackLayout>
+    <VerticalStackLayout Spacing="9">
+     <Grid ColumnDefinitions="*,Auto">
+      <Label Text="DIFFICULTY" FontFamily="Nunito" FontAttributes="Bold" FontSize="11" CharacterSpacing="1" TextColor="#64748B" />
+      <Border Grid.Column="1" Padding="8,3" BackgroundColor="#FAF5FF" Stroke="#F3E8FF" StrokeShape="RoundRectangle 6"><Label x:Name="DifficultyBadge" Text="HARD" FontFamily="Nunito" FontAttributes="Bold" FontSize="10" TextColor="#7C3AED" /></Border>
+     </Grid>
+     <Border Padding="6" BackgroundColor="#F7F4FD" Stroke="#F3E8FF" StrokeShape="RoundRectangle 16">
+      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+       <Button x:Name="EasyButton" Text="Easy" Clicked="OnDifficultyClicked" CommandParameter="Easy" />
+       <Button x:Name="MediumButton" Grid.Column="1" Text="Medium" Clicked="OnDifficultyClicked" CommandParameter="Medium" />
+       <Button x:Name="HardButton" Grid.Column="2" Text="Hard" Clicked="OnDifficultyClicked" CommandParameter="Hard" />
+      </Grid>
+     </Border>
+    </VerticalStackLayout>
+    <Border Padding="16" BackgroundColor="#F4FBFB" Stroke="#330D9488" StrokeThickness="2" StrokeShape="RoundRectangle 16">
+     <VerticalStackLayout Spacing="7"><Border HorizontalOptions="Start" Padding="8,3" BackgroundColor="#CCFBF1" StrokeShape="RoundRectangle 12"><Label Text="FAIR PLAY" FontFamily="Nunito" FontAttributes="Bold" FontSize="9" TextColor="#0D9488" /></Border><Label Text="Each player receives a different puzzle of the same difficulty." FontFamily="Nunito" FontAttributes="Bold" FontSize="11" TextColor="#475569" /><BoxView HeightRequest="1" Color="#220D9488" /></VerticalStackLayout>
+    </Border>
+    <Grid ColumnDefinitions="1*,2*" ColumnSpacing="11">
+     <Button Text="Cancel" Clicked="OnCancelClicked" HeightRequest="49" CornerRadius="16" BorderWidth="2" BorderColor="#E9D5FF" BackgroundColor="White" TextColor="#7C3AED" FontFamily="Fredoka" FontAttributes="Bold" />
+     <Button x:Name="CreateButton" Grid.Column="1" Text="Create Room" Clicked="OnCreateClicked" HeightRequest="49" CornerRadius="16" BackgroundColor="#7C3AED" TextColor="White" FontFamily="Fredoka" FontAttributes="Bold"><Button.Shadow><Shadow Brush="#557C3AED" Offset="0,6" Radius="18" /></Button.Shadow></Button>
+    </Grid>
+   </VerticalStackLayout>
+  </Border>
+ </Grid>
+</ContentPage>

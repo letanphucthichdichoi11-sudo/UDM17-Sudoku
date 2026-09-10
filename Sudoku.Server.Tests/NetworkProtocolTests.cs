@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -62,12 +63,14 @@ namespace Sudoku.Server.Tests
                 RoomId = Guid.NewGuid(),
                 Puzzle = new int[81],
                 OwnBoard = new int[81],
+                OpponentBoard = new int[81],
                 Duration = MatchDurationMinutes.Five,
                 State = MatchLifecycleState.Preparing,
                 ServerUtcNow = DateTime.UtcNow
             };
             status.Puzzle[2 * 9 + 3] = 7;
             status.OwnBoard[4 * 9 + 5] = 9;
+            status.OpponentBoard[6 * 9 + 7] = 4;
 
             MatchStatusResponse roundTrip = JsonHelper.Deserialize<MatchStatusResponse>(
                 JsonHelper.Serialize(status));
@@ -75,6 +78,8 @@ namespace Sudoku.Server.Tests
             Assert.AreEqual(7, roundTrip.Puzzle[2 * 9 + 3]);
             Assert.AreEqual(9, roundTrip.OwnBoard[4 * 9 + 5]);
             Assert.AreEqual(81, roundTrip.OwnBoard.Length);
+            Assert.AreEqual(4, roundTrip.OpponentBoard[6 * 9 + 7]);
+            Assert.AreEqual(81, roundTrip.OpponentBoard.Length);
             Assert.IsNull(typeof(MatchStatusResponse).GetProperty("Solution"));
             Assert.IsNull(typeof(MatchStatusResponse).GetProperty("SolutionGrid"));
         }
@@ -102,7 +107,7 @@ namespace Sudoku.Server.Tests
 
                 Message create = await RequestAsync(firstStream,
                     Message.Create(MessageType.CreateRoom,
-                        new CreateRoomRequest { RoomName = "Duel Room" }));
+                        new CreateRoomRequest { RoomName = "Duel Room", Difficulty = SudokuDifficultyLevel.Easy }));
                 LobbyRoomDto room = create.ReadPayload<LobbyRoomDto>();
                 await RequestAsync(secondStream, Message.Create(MessageType.JoinRoom,
                     new RoomRequest { RoomId = room.RoomId }));
@@ -120,7 +125,10 @@ namespace Sudoku.Server.Tests
 
                 Assert.AreEqual(MessageType.MatchPrepared, start.Type);
                 Assert.AreEqual(requesterStatus.MatchId, opponentStatus.MatchId);
-                CollectionAssert.AreEqual(requesterStatus.Puzzle, opponentStatus.Puzzle);
+                Assert.AreEqual(SudokuDifficultyLevel.Easy, room.Difficulty);
+                Assert.IsFalse(Enumerable.SequenceEqual(
+                    requesterStatus.Puzzle,
+                    opponentStatus.Puzzle));
                 Assert.AreEqual(81, requesterStatus.OwnBoard.Length);
                 Assert.AreEqual(81, opponentStatus.OwnBoard.Length);
                 Assert.IsTrue(requesterStatus.PreparingEndsAtUtc.HasValue);

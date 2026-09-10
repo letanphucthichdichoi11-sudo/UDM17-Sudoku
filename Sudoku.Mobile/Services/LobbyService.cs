@@ -43,7 +43,8 @@ public sealed class LobbyService
 
     public async Task<LobbyRoom?> CreateRoomAsync(
         string playerId,
-        string roomName)
+        string roomName,
+        SudokuDifficultyLevel difficulty = SudokuDifficultyLevel.Medium)
     {
         LobbyRoomDto room =
             await _client.RequestAsync<
@@ -52,7 +53,8 @@ public sealed class LobbyService
                     MessageType.CreateRoom,
                     new CreateRoomRequest
                     {
-                        RoomName = roomName
+                        RoomName = roomName,
+                        Difficulty = difficulty
                     });
 
         return MapRoom(room);
@@ -261,6 +263,10 @@ public sealed class LobbyService
             _preparedMatches.TryRemove(
                 roomId,
                 out _);
+
+            startedMatch.OpponentName = isPlayerOne
+                ? room.Player2?.Username
+                : room.Player1?.Username;
 
             return startedMatch;
         }
@@ -586,7 +592,8 @@ public sealed class LobbyService
                     : null,
 
             HasActiveMatch =
-                room.HasActiveMatch
+                room.HasActiveMatch,
+            Difficulty = room.Difficulty
         };
     }
 

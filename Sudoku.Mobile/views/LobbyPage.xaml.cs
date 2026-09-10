@@ -1,7 +1,7 @@
 ﻿using Sudoku.Mobile.Network;
+using Sudoku.Mobile.Models;
 using Sudoku.Mobile.Services;
 using Sudoku.Mobile.ViewModels;
-using Sudoku.Mobile.views;
 using Sudoku.Shared.Models;
 
 namespace Sudoku.Mobile.Views;
@@ -9,6 +9,7 @@ namespace Sudoku.Mobile.Views;
 public partial class LobbyPage : ContentPage
 {
     private readonly LobbyViewModel _viewModel;
+    private bool _developmentQuickMatchStarted;
 
     public LobbyPage()
     {
@@ -30,6 +31,14 @@ public partial class LobbyPage : ContentPage
         try
         {
             await _viewModel.LoadRoomsAsync();
+            DevelopmentLaunchOptions.MarkLobbyReady();
+
+            if (!_developmentQuickMatchStarted &&
+                DevelopmentLaunchOptions.AutoQuickMatch)
+            {
+                _developmentQuickMatchStarted = true;
+                OnQuickMatchClicked(QuickMatchButton, EventArgs.Empty);
+            }
         }
         catch (Exception ex)
         {
@@ -46,51 +55,7 @@ public partial class LobbyPage : ContentPage
         object? sender,
         EventArgs e)
     {
-        try
-        {
-            string? roomName =
-                await DisplayPromptAsync(
-                    "Create Room",
-                    "Nhập tên phòng:");
-
-            if (string.IsNullOrWhiteSpace(roomName))
-                return;
-
-            string playerId =
-                TcpGameClient.Shared.PlayerId
-                ?? throw new InvalidOperationException(
-                    "TCP chưa có PlayerId.");
-
-            var room =
-                await _viewModel.CreateRoomAsync(
-                    playerId,
-                    roomName);
-
-            if (room == null)
-            {
-                await DisplayAlertAsync(
-                    "Lỗi",
-                    "Không thể tạo phòng.",
-                    "OK");
-
-                return;
-            }
-
-            await DisplayAlertAsync(
-                "Thành công",
-                $"Đã tạo phòng: {roomName}",
-                "OK");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(
-                $"[CREATE ROOM ERROR] {ex}");
-
-            await DisplayAlertAsync(
-                "Lỗi",
-                ex.Message,
-                "OK");
-        }
+        await Shell.Current.GoToAsync(nameof(CreateRoomPage));
     }
 
     // =========================================================

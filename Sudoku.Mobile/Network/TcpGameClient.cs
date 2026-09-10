@@ -93,11 +93,22 @@ public sealed class TcpGameClient : IAsyncDisposable
         CleanupSocket();
         _client = new TcpClient { NoDelay = true };
 #if ANDROID
-        const string host = "10.0.2.2";
+        const string platformDefaultHost = "10.0.2.2";
 #else
-        const string host = "127.0.0.1";
+        const string platformDefaultHost = "127.0.0.1";
 #endif
-        await _client.ConnectAsync(host, 5000);
+        string host = Environment.GetEnvironmentVariable("SUDOKU_GAME_HOST")
+            ?? platformDefaultHost;
+        int port = Int32.TryParse(
+            Environment.GetEnvironmentVariable("SUDOKU_GAME_PORT"),
+            out int configuredPort)
+            ? configuredPort
+            : 5000;
+
+        Console.WriteLine($"[TCP] Connecting to {host}:{port}");
+        using var connectTimeout = new CancellationTokenSource(
+            TimeSpan.FromSeconds(10));
+        await _client.ConnectAsync(host, port, connectTimeout.Token);
         _stream = _client.GetStream();
         _connectionCancellation = new CancellationTokenSource();
         _ = ReceiveLoopAsync(_connectionCancellation.Token);

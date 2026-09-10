@@ -36,20 +36,32 @@ namespace Sudoku.Api.Controllers
 
             if (user == null)
             {
-                return Ok(new LoginResponse { Success = false, Message = "Sai tài khoản hoặc mật khẩu." });
+                return Unauthorized(new LoginResponse
+                {
+                    Success = false,
+                    Message = "Sai tài khoản hoặc mật khẩu."
+                });
             }
 
             // Kiểm tra trạng thái tài khoản
             if (user.Status != "Active")
             {
-                return Ok(new LoginResponse { Success = false, Message = "Tài khoản chưa được kích hoạt. Vui lòng xác thực OTP!" });
+                return StatusCode(403, new LoginResponse
+                {
+                    Success = false,
+                    Message = "Tài khoản chưa được kích hoạt. Vui lòng xác thực OTP!"
+                });
             }
 
             // Xác thực mật khẩu
             bool isPasswordCorrect = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
             if (!isPasswordCorrect)
             {
-                return Ok(new LoginResponse { Success = false, Message = "Sai tài khoản hoặc mật khẩu." });
+                return Unauthorized(new LoginResponse
+                {
+                    Success = false,
+                    Message = "Sai tài khoản hoặc mật khẩu."
+                });
             }
 
             // Tạo Token

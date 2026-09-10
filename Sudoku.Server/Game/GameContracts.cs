@@ -39,6 +39,17 @@ namespace Sudoku.Server.Game
             int[,] solutionGrid,
             Sudoku.Shared.Models.MatchDurationMinutes duration);
 
+        Match StartMatch(
+            Guid roomId,
+            Guid matchId,
+            string playerAId,
+            string playerBId,
+            int[,] originalPuzzle,
+            int[,] solutionGrid,
+            int[,] originalPuzzleB,
+            int[,] solutionGridB,
+            Sudoku.Shared.Models.MatchDurationMinutes duration);
+
         bool MarkPlayerReady(Guid matchId, string playerId);
 
         MatchStatusResponse GetPlayerStatus(Guid matchId, string playerId);

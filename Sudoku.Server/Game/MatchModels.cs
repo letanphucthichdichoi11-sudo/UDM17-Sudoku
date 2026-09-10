@@ -38,6 +38,8 @@ namespace Sudoku.Server.Game
         public string PlayerBId { get; set; }
         public int[,] OriginalPuzzle { get; set; }
         public int[,] SolutionGrid { get; set; }
+        public int[,] OriginalPuzzleB { get; set; }
+        public int[,] SolutionGridB { get; set; }
         public PlayerBoardState BoardA { get; set; }
         public PlayerBoardState BoardB { get; set; }
         public TimeSpan TimeLimit { get; set; }
@@ -66,6 +68,8 @@ namespace Sudoku.Server.Game
 
         public bool IsPlayer(string playerId) { return playerId == PlayerAId || playerId == PlayerBId; }
         public PlayerBoardState GetBoard(string playerId) { return playerId == PlayerAId ? BoardA : BoardB; }
+        public int[,] GetPuzzle(string playerId) { return playerId == PlayerAId ? OriginalPuzzle : OriginalPuzzleB; }
+        public int[,] GetSolution(PlayerBoardState board) { return ReferenceEquals(board, BoardA) ? SolutionGrid : SolutionGridB; }
         public string GetOpponent(string playerId) { return playerId == PlayerAId ? PlayerBId : PlayerAId; }
     }
 
@@ -94,6 +98,7 @@ namespace Sudoku.Server.Game
         public Guid MatchId { get; set; }
         public int[,] OriginalPuzzle { get; set; }
         public int[,] OwnBoard { get; set; }
+        public int[,] OpponentBoard { get; set; }
         public int OwnCorrectCount { get; set; }
         public int OwnErrorCount { get; set; }
         public int OpponentCorrectCount { get; set; }

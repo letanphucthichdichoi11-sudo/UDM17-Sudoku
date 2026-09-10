@@ -1,148 +1,182 @@
 <?xml version="1.0" encoding="utf-8" ?>
-
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Sudoku.Mobile.SudokuPage"
-    Title="Sudoku">
+    Title="Sudoku Duel"
+    Shell.NavBarIsVisible="False"
+    BackgroundColor="#F3EEFD"
+    SizeChanged="OnPageSizeChanged">
 
-    <ScrollView>
+    <Grid>
+        <Border WidthRequest="32" HeightRequest="32" BackgroundColor="#FBBF24"
+                Stroke="Transparent" StrokeShape="RoundRectangle 16" Opacity="0.30"
+                HorizontalOptions="Start" VerticalOptions="Start" Margin="-8,-6,0,0" />
+        <Border WidthRequest="28" HeightRequest="28" BackgroundColor="#06B6D4"
+                Stroke="Transparent" StrokeShape="RoundRectangle 8" Opacity="0.30"
+                HorizontalOptions="End" VerticalOptions="Start" Margin="0,64,-5,0" Rotation="45" />
+        <Border WidthRequest="36" HeightRequest="36" BackgroundColor="#A78BFA"
+                Stroke="Transparent" StrokeShape="RoundRectangle 10" Opacity="0.30"
+                HorizontalOptions="Start" VerticalOptions="End" Margin="-6,0,0,70" Rotation="12" />
 
-        <VerticalStackLayout
-            Padding="20"
-            Spacing="15">
+        <ScrollView>
+            <VerticalStackLayout x:Name="GameplayLayout" Padding="8,5,8,8" Spacing="7"
+                                 WidthRequest="424" HorizontalOptions="Center" MaximumWidthRequest="424">
+                <Border StrokeShape="RoundRectangle 16" Stroke="#DDD6FE" StrokeThickness="2"
+                        BackgroundColor="White" Padding="10,8" Margin="0,0,0,1">
+                    <Border.Shadow>
+                        <Shadow Brush="#6D28D9" Opacity="0.15" Offset="0,8" Radius="0" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Spacing="6">
+                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="6">
+                            <Border Grid.Column="0" WidthRequest="28" HeightRequest="28"
+                                    BackgroundColor="#7C3AED" Stroke="Transparent"
+                                    StrokeShape="RoundRectangle 11">
+                                <Label Text="✦" TextColor="White" FontSize="12" FontAttributes="Bold"
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <HorizontalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
+                                <Label Text="Sudoku Duel" FontSize="16" FontAttributes="Bold"
+                                       TextColor="#2E1065" VerticalOptions="Center" />
+                                <Border BackgroundColor="#FEF3C7" Stroke="#FDE68A" StrokeThickness="1"
+                                        StrokeShape="RoundRectangle 9" Padding="5,1">
+                                    <Label Text="1V1 RANKED" FontSize="9" FontAttributes="Bold"
+                                           TextColor="#D97706" />
+                                </Border>
+                            </HorizontalStackLayout>
+                            <Border Grid.Column="2" BackgroundColor="#F3EEFD" Stroke="#DDD6FE"
+                                    StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="8,2"
+                                    VerticalOptions="Center">
+                                <Label x:Name="GameTimerLabel" Text="05:00" FontSize="11"
+                                       FontAttributes="Bold" TextColor="#7C3AED" />
+                            </Border>
+                        </Grid>
 
-            <Label
-                Text="SUDOKU"
-                FontSize="30"
-                FontAttributes="Bold"
-                HorizontalOptions="Center" />
+                        <Border BackgroundColor="#F0FDFA" Stroke="#A5F3FC" StrokeThickness="1"
+                                StrokeShape="RoundRectangle 12" Padding="7,5">
+                            <VerticalStackLayout Spacing="4">
+                                <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" ColumnSpacing="5">
+                                    <Border Grid.Column="0" WidthRequest="20" HeightRequest="20"
+                                            BackgroundColor="#06B6D4" Stroke="Transparent"
+                                            StrokeShape="RoundRectangle 10" />
+                                    <Label x:Name="OpponentNameLabel" Grid.Column="1" Text="Rival"
+                                           FontSize="12" FontAttributes="Bold" TextColor="#0E7490"
+                                           VerticalOptions="Center" />
+                                    <Border Grid.Column="2" HorizontalOptions="Start" BackgroundColor="White"
+                                            Stroke="#CFFAFE" StrokeShape="RoundRectangle 3" Padding="4,0"
+                                            VerticalOptions="Center">
+                                        <Label Text="Opponent" FontSize="9" TextColor="#0891B2" />
+                                    </Border>
+                                    <Label x:Name="OpponentPercentLabel" Grid.Column="3" Text="0%"
+                                           FontSize="12" FontAttributes="Bold" TextColor="#0891B2"
+                                           VerticalOptions="Center" />
+                                    <Border Grid.Column="4" WidthRequest="7" HeightRequest="7"
+                                            BackgroundColor="#06B6D4" Stroke="Transparent"
+                                            StrokeShape="RoundRectangle 4" VerticalOptions="Center" />
+                                </Grid>
+                                <ProgressBar x:Name="OpponentProgressBar" Progress="0"
+                                             ProgressColor="#06B6D4" BackgroundColor="#E0F2FE"
+                                             HeightRequest="10" />
+                            </VerticalStackLayout>
+                        </Border>
 
-            <Label
-                Text="Giải Sudoku"
-                FontSize="16"
-                HorizontalOptions="Center" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5" Padding="3,0">
+                            <HorizontalStackLayout Grid.Column="0" Spacing="4" VerticalOptions="Center">
+                                <Border WidthRequest="8" HeightRequest="8" BackgroundColor="#7C3AED"
+                                        Stroke="Transparent" StrokeShape="RoundRectangle 4" />
+                                <Label Text="Your Progress:" FontSize="10" FontAttributes="Bold"
+                                       TextColor="#6D28D9" />
+                                <Label x:Name="MyProgressLabel" Text="0%" FontSize="10"
+                                       FontAttributes="Bold" TextColor="#7C3AED" />
+                            </HorizontalStackLayout>
+                            <Border x:Name="LeadBadgeBorder" Grid.Column="1" BackgroundColor="#FEF3C7"
+                                    Stroke="#FDE68A" StrokeThickness="1" StrokeShape="RoundRectangle 6"
+                                    Padding="5,1">
+                                <Label x:Name="LeadBadgeLabel" Text="Match is tied" FontSize="9"
+                                       FontAttributes="Bold" TextColor="#D97706" />
+                            </Border>
+                        </Grid>
+                    </VerticalStackLayout>
+                </Border>
 
-            <!-- Bàn Sudoku -->
-            <Grid
-                x:Name="SudokuGrid"
-                HeightRequest="360"
-                WidthRequest="360"
-                RowSpacing="1"
-                ColumnSpacing="1">
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <Button x:Name="MyBoardTabButton" Grid.Column="0" Text="My Board     Active"
+                            Clicked="OnMyBoardTabClicked" HeightRequest="42" CornerRadius="16"
+                            MinimumHeightRequest="0" MinimumWidthRequest="0"
+                            Padding="10,0" FontSize="13" FontAttributes="Bold"
+                            BackgroundColor="#7C3AED" TextColor="White"
+                            BorderColor="#5B21B6" BorderWidth="2" />
+                    <Button x:Name="OpponentTabButton" Grid.Column="1" Text="Rival's Board   VIEW ONLY"
+                            Clicked="OnOpponentTabClicked" HeightRequest="42" CornerRadius="16"
+                            MinimumHeightRequest="0" MinimumWidthRequest="0"
+                            Padding="8,0" FontSize="11" FontAttributes="Bold"
+                            BackgroundColor="White" TextColor="#6B7280"
+                            BorderColor="#DDD6FE" BorderWidth="2" />
+                </Grid>
 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
+                <Border x:Name="OpponentReadOnlyBanner" IsVisible="False"
+                        BackgroundColor="#FEF3C7" Stroke="#FBBF24" StrokeThickness="2"
+                        StrokeShape="RoundRectangle 12" Padding="8,4">
+                    <Label Text="Viewing opponent's live board (Read-Only Mode)"
+                           HorizontalOptions="Center" FontSize="11" FontAttributes="Bold"
+                           TextColor="#92400E" />
+                </Border>
 
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+                <Border x:Name="BoardContainer" WidthRequest="370" HeightRequest="370"
+                        MinimumWidthRequest="370" MinimumHeightRequest="370"
+                        MaximumWidthRequest="370" MaximumHeightRequest="370"
+                        StrokeShape="RoundRectangle 24" Stroke="#7C3AED" StrokeThickness="3"
+                        BackgroundColor="White" Padding="6" HorizontalOptions="Center"
+                        Margin="0,28,0,0">
+                    <Border.Shadow>
+                        <Shadow Brush="#6D28D9" Opacity="0.15" Offset="0,8" Radius="0" />
+                    </Border.Shadow>
+                    <Grid x:Name="SudokuGrid" WidthRequest="352" HeightRequest="352"
+                          MinimumWidthRequest="352" MinimumHeightRequest="352"
+                          MaximumWidthRequest="352" MaximumHeightRequest="352"
+                          BackgroundColor="#7C3AED" RowSpacing="3" ColumnSpacing="3"
+                          RowDefinitions="*,*,*" ColumnDefinitions="*,*,*"
+                          HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
 
-            </Grid>
+                <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="8" Padding="4,1"
+                      Margin="0,34,0,0">
+                    <Button x:Name="EraseButton" Grid.Column="0" Text="Erase" Clicked="OnEraseClicked"
+                            HeightRequest="34" Padding="12,0" CornerRadius="12" FontSize="11"
+                            MinimumHeightRequest="0" MinimumWidthRequest="0"
+                            FontAttributes="Bold" BackgroundColor="White" TextColor="#7C3AED"
+                            BorderColor="#DDD6FE" BorderWidth="2" />
+                    <Button x:Name="HintButton" Grid.Column="1" Text="💡 Hint (1)" Clicked="OnHintClicked"
+                            HeightRequest="34" Padding="10,0" CornerRadius="12" FontSize="11"
+                            MinimumHeightRequest="0" MinimumWidthRequest="0"
+                            FontAttributes="Bold" BackgroundColor="White" TextColor="#06B6D4"
+                            BorderColor="#DDD6FE" BorderWidth="2" />
+                    <Border Grid.Column="3" BackgroundColor="#EDE9FE" Stroke="#DDD6FE"
+                            StrokeThickness="1" StrokeShape="RoundRectangle 12" Padding="9,3"
+                            VerticalOptions="Center">
+                        <Label x:Name="CellStatusLabel" Text="Cell: --" FontSize="10"
+                               FontAttributes="Bold" TextColor="#6D28D9" />
+                    </Border>
+                </Grid>
 
-            <!-- Các phím số -->
-            <Grid
-                RowSpacing="5"
-                ColumnSpacing="5">
-
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="50" />
-                    <RowDefinition Height="50" />
-                </Grid.RowDefinitions>
-
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <Button
-                    Grid.Row="0"
-                    Grid.Column="0"
-                    Text="1"
-                    Clicked="OnNumberClicked" />
-
-                <Button
-                    Grid.Row="0"
-                    Grid.Column="1"
-                    Text="2"
-                    Clicked="OnNumberClicked" />
-
-                <Button
-                    Grid.Row="0"
-                    Grid.Column="2"
-                    Text="3"
-                    Clicked="OnNumberClicked" />
-
-                <Button
-                    Grid.Row="0"
-                    Grid.Column="3"
-                    Text="4"
-                    Clicked="OnNumberClicked" />
-
-                <Button
-                    Grid.Row="0"
-                    Grid.Column="4"
-                    Text="5"
-                    Clicked="OnNumberClicked" />
-
-                <Button
-                    Grid.Row="1"
-                    Grid.Column="0"
-                    Text="6"
-                    Clicked="OnNumberClicked" />
-
-                <Button
-                    Grid.Row="1"
-                    Grid.Column="1"
-                    Text="7"
-                    Clicked="OnNumberClicked" />
-
-                <Button
-                    Grid.Row="1"
-                    Grid.Column="2"
-                    Text="8"
-                    Clicked="OnNumberClicked" />
-
-                <Button
-                    Grid.Row="1"
-                    Grid.Column="3"
-                    Text="9"
-                    Clicked="OnNumberClicked" />
-
-                <Button
-                    Grid.Row="1"
-                    Grid.Column="4"
-                    Text="Xóa"
-                    Clicked="OnClearClicked" />
-
-            </Grid>
-
-            <Button
-                Text="Ván mới"
-                Clicked="OnNewGameClicked" />
-
-        </VerticalStackLayout>
-
-    </ScrollView>
-
+                <Border x:Name="NumberPadCard" StrokeShape="RoundRectangle 16" Stroke="#DDD6FE"
+                        StrokeThickness="2" BackgroundColor="White" Padding="7">
+                    <Border.Shadow>
+                        <Shadow Brush="#6D28D9" Opacity="0.15" Offset="0,6" Radius="0" />
+                    </Border.Shadow>
+                    <Grid x:Name="NumberPad" ColumnDefinitions="*,*,*,*,*,*,*,*,*" ColumnSpacing="4">
+                        <Button x:Name="Number1" Grid.Column="0" Text="1" Clicked="OnNumberClicked" />
+                        <Button x:Name="Number2" Grid.Column="1" Text="2" Clicked="OnNumberClicked" />
+                        <Button x:Name="Number3" Grid.Column="2" Text="3" Clicked="OnNumberClicked" />
+                        <Button x:Name="Number4" Grid.Column="3" Text="4" Clicked="OnNumberClicked" />
+                        <Button x:Name="Number5" Grid.Column="4" Text="5" Clicked="OnNumberClicked" />
+                        <Button x:Name="Number6" Grid.Column="5" Text="6" Clicked="OnNumberClicked" />
+                        <Button x:Name="Number7" Grid.Column="6" Text="7" Clicked="OnNumberClicked" />
+                        <Button x:Name="Number8" Grid.Column="7" Text="8" Clicked="OnNumberClicked" />
+                        <Button x:Name="Number9" Grid.Column="8" Text="9" Clicked="OnNumberClicked" />
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>

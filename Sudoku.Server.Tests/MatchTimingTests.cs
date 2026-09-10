@@ -131,7 +131,7 @@ namespace Sudoku.Server.Tests
         }
 
         [TestMethod]
-        public void PlayerStatus_ContainsCurrentOwnBoardWithoutOpponentBoard()
+        public void PlayerStatus_ContainsSeparateCurrentBoardsForBothPlayers()
         {
             TestContext context = CreateStartedMatch(MatchDurationMinutes.Five);
             int row;
@@ -145,7 +145,8 @@ namespace Sudoku.Server.Tests
 
             Assert.AreEqual(context.Match.SolutionGrid[row, column], playerA.OwnBoard[row * 9 + column]);
             Assert.AreEqual(0, playerB.OwnBoard[row * 9 + column]);
-            Assert.IsNull(typeof(MatchStatusResponse).GetProperty("OpponentBoard"));
+            Assert.AreEqual(0, playerA.OpponentBoard[row * 9 + column]);
+            Assert.AreEqual(context.Match.SolutionGrid[row, column], playerB.OpponentBoard[row * 9 + column]);
         }
 
         [TestMethod]
@@ -190,6 +191,46 @@ namespace Sudoku.Server.Tests
             drawContext.Clock.UtcNow = drawContext.Match.EndsAtUtc.Value;
             drawContext.Manager.ProcessDueTimers(drawContext.Clock.UtcNow);
             Assert.IsNull(drawContext.Match.Result.WinnerPlayerId);
+        }
+
+        [TestMethod]
+        public void CompletedMatch_ReturnsSameWinnerAndFrozenTimeToBothPlayers()
+        {
+            TestContext context = CreateStartedMatch(MatchDurationMinutes.Five);
+            context.Clock.UtcNow = context.Match.StartedAtUtc.Value
+                .AddMinutes(4)
+                .AddSeconds(32);
+
+            int moveNumber = 0;
+            for (int row = 0; row < 9; row++)
+            for (int column = 0; column < 9; column++)
+            {
+                if (context.Match.OriginalPuzzle[row, column] != 0)
+                    continue;
+
+                MoveResult move = context.Manager.SubmitMove(
+                    context.Match.MatchId,
+                    "a",
+                    "complete-" + moveNumber++,
+                    row,
+                    column,
+                    context.Match.SolutionGrid[row, column]);
+                Assert.IsTrue(move.Accepted);
+            }
+
+            MatchStatusResponse playerA = context.Manager.GetPlayerStatus(
+                context.Match.MatchId, "a");
+            MatchStatusResponse playerB = context.Manager.GetPlayerStatus(
+                context.Match.MatchId, "b");
+
+            Assert.AreEqual(MatchLifecycleState.Archived, playerA.State);
+            Assert.AreEqual("a", playerA.WinnerPlayerId);
+            Assert.AreEqual(playerA.WinnerPlayerId, playerB.WinnerPlayerId);
+            Assert.AreEqual(context.Clock.UtcNow, playerA.FinishedAtUtc);
+            Assert.AreEqual(playerA.FinishedAtUtc, playerB.FinishedAtUtc);
+            Assert.AreEqual(
+                TimeSpan.FromMinutes(4).Add(TimeSpan.FromSeconds(32)),
+                playerA.FinishedAtUtc.Value - playerA.StartedAtUtc.Value);
         }
 
         [TestMethod]

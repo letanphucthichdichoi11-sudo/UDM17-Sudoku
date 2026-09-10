@@ -13,6 +13,8 @@ namespace Sudoku.Mobile
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                    fonts.AddFont("Fredoka-Variable.ttf", "Fredoka");
+                    fonts.AddFont("Nunito-Variable.ttf", "Nunito");
                 });
 
 #if DEBUG

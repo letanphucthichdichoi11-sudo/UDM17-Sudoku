@@ -46,8 +46,10 @@
     <Compile Include="Models\MatchContracts.cs" />
     <Compile Include="Models\Player.cs" />
     <Compile Include="Models\Room.cs" />
+    <Compile Include="Models\SudokuBoardCoordinates.cs" />
     <Compile Include="Models\SudokuCell.cs" />
     <Compile Include="Network\Message.cs" />
+    <Compile Include="Network\ApiErrorClassifier.cs" />
     <Compile Include="Network\MessageType.cs" />
     <Compile Include="Network\Packet.cs" />
     <Compile Include="Network\ProtocolContracts.cs" />

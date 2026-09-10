@@ -141,7 +141,7 @@ namespace Sudoku.Server.Network
         private async Task<Message> CreateRoomAsync(Message request, ClientSession session)
         {
             CreateRoomRequest payload = request.ReadPayload<CreateRoomRequest>();
-            Room room = _games.Rooms.CreateRoom(payload.RoomName, new Player(session.PlayerId, session.PlayerName));
+            Room room = _games.Rooms.CreateRoom(payload.RoomName, new Player(session.PlayerId, session.PlayerName), payload.Difficulty);
             await BroadcastRoomsAsync();
             return Response(request, MessageType.CreateRoom, MapRoom(room));
         }
@@ -295,6 +295,7 @@ namespace Sudoku.Server.Network
                     PlayerName = player.PlayerName
                 }).ToList(),
                 HasActiveMatch = hasActiveMatch
+                ,Difficulty = room.Difficulty
             };
         }
 
