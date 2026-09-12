@@ -4,10 +4,11 @@ using Sudoku.Shared.Network;
 
 namespace Sudoku.Mobile.Services;
 
-public sealed class MatchService
+public sealed class MatchService : IDisposable
 {
     private readonly TcpGameClient _client;
     private Guid? _activeMatchId;
+    private bool _disposed;
 
     public event EventHandler<MatchStatusResponse>? MatchPrepared;
     public event EventHandler<MatchStatusResponse>? MatchStarted;
@@ -130,5 +131,20 @@ public sealed class MatchService
         {
             Console.WriteLine("Could not restore active match after reconnect: " + exception.Message);
         }
+    }
+
+    public void TrackMatch(Guid matchId)
+    {
+        _activeMatchId = matchId;
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+            return;
+
+        _disposed = true;
+        _client.EventReceived -= OnEventReceived;
+        _client.Reconnected -= OnReconnected;
     }
 }

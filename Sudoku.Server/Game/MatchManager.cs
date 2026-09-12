@@ -32,6 +32,11 @@ namespace Sudoku.Server.Game
 
         public Match StartMatch(Guid roomId, Guid matchId, string playerAId, string playerBId, int[,] originalPuzzle, int[,] solutionGrid, MatchDurationMinutes duration)
         {
+            return StartMatch(roomId, matchId, playerAId, playerBId, originalPuzzle, solutionGrid, originalPuzzle, solutionGrid, duration);
+        }
+
+        public Match StartMatch(Guid roomId, Guid matchId, string playerAId, string playerBId, int[,] originalPuzzle, int[,] solutionGrid, int[,] originalPuzzleB, int[,] solutionGridB, MatchDurationMinutes duration)
+        {
             TimeSpan timeLimit = ToTimeLimit(duration);
             ValidateStartArguments(roomId, matchId, playerAId, playerBId, originalPuzzle, solutionGrid, timeLimit);
             var match = new Match
@@ -42,6 +47,8 @@ namespace Sudoku.Server.Game
                 PlayerBId = playerBId,
                 OriginalPuzzle = MatchGrid.Clone(originalPuzzle),
                 SolutionGrid = MatchGrid.Clone(solutionGrid),
+                OriginalPuzzleB = MatchGrid.Clone(originalPuzzleB),
+                SolutionGridB = MatchGrid.Clone(solutionGridB),
                 TimeLimit = timeLimit,
                 Duration = duration,
                 PreparingEndsAtUtc = _clock.UtcNow.Add(PreparingTimeout),
@@ -50,7 +57,7 @@ namespace Sudoku.Server.Game
                 ConnectionB = ConnectionStatus.Connected
             };
             match.BoardA = new PlayerBoardState(match.OriginalPuzzle);
-            match.BoardB = new PlayerBoardState(match.OriginalPuzzle);
+            match.BoardB = new PlayerBoardState(match.OriginalPuzzleB);
             if (!_matches.TryAdd(matchId, match)) throw new InvalidOperationException("A match with this matchId already exists.");
             _repository.SaveMatch(match);
             return match;
@@ -161,7 +168,7 @@ namespace Sudoku.Server.Game
                 var own = match.GetBoard(playerId);
                 var opponent = match.GetBoard(match.GetOpponent(playerId));
                 DateTime now = _clock.UtcNow;
-                return new PlayerMatchSnapshot { MatchId = matchId, OriginalPuzzle = MatchGrid.Clone(match.OriginalPuzzle), OwnBoard = MatchGrid.Clone(own.CurrentValues), OwnCorrectCount = own.CorrectCount, OwnErrorCount = own.ErrorCount, OpponentCorrectCount = opponent.CorrectCount, OpponentErrorCount = opponent.ErrorCount, TimeLeft = GetTimeLeft(match, now), ServerUtcNow = now, StartedAtUtc = match.StartedAtUtc, EndsAtUtc = match.EndsAtUtc, State = match.State };
+                return new PlayerMatchSnapshot { MatchId = matchId, OriginalPuzzle = MatchGrid.Clone(match.GetPuzzle(playerId)), OwnBoard = MatchGrid.Clone(own.CurrentValues), OpponentBoard = MatchGrid.Clone(opponent.CurrentValues), OwnCorrectCount = own.CorrectCount, OwnErrorCount = own.ErrorCount, OpponentCorrectCount = opponent.CorrectCount, OpponentErrorCount = opponent.ErrorCount, TimeLeft = GetTimeLeft(match, now), ServerUtcNow = now, StartedAtUtc = match.StartedAtUtc, EndsAtUtc = match.EndsAtUtc, State = match.State };
             }
         }
 
@@ -177,6 +184,7 @@ namespace Sudoku.Server.Game
                     RoomId = match.RoomId,
                     Puzzle = MatchGrid.Flatten(snapshot.OriginalPuzzle),
                     OwnBoard = MatchGrid.Flatten(snapshot.OwnBoard),
+                    OpponentBoard = MatchGrid.Flatten(snapshot.OpponentBoard),
                     State = (MatchLifecycleState)match.State,
                     Duration = match.Duration,
                     PlayerAReady = match.PlayerAReady,
@@ -185,6 +193,7 @@ namespace Sudoku.Server.Game
                     PreparingEndsAtUtc = match.PreparingEndsAtUtc,
                     StartedAtUtc = snapshot.StartedAtUtc,
                     EndsAtUtc = snapshot.EndsAtUtc,
+                    FinishedAtUtc = match.Result == null ? (DateTime?)null : match.Result.FinishedAtUtc,
                     TimeLeft = snapshot.TimeLeft,
                     OwnCorrectCount = snapshot.OwnCorrectCount,
                     OwnErrorCount = snapshot.OwnErrorCount,
@@ -319,20 +328,23 @@ namespace Sudoku.Server.Game
         private MoveResult ApplyMove(Match match, PlayerBoardState board, int row, int col, int value)
         {
             var oldValue = board.CurrentValues[row, col];
-            var oldWasCorrect = oldValue != 0 && oldValue == match.SolutionGrid[row, col];
+            int[,] solution = match.GetSolution(board);
+            var oldWasCorrect = oldValue != 0 && oldValue == solution[row, col];
             if (value == 0)
             {
                 board.CurrentValues[row, col] = 0;
                 if (oldWasCorrect) board.CorrectCount--;
                 return Success(board, row, col, value, true);
             }
-            if (value != match.SolutionGrid[row, col])
+
+            if (oldWasCorrect) board.CorrectCount--;
+            board.CurrentValues[row, col] = value;
+            if (value != solution[row, col])
             {
                 board.ErrorCount++;
-                return new MoveResult { Accepted = false, IsCorrect = false, ErrorCode = MoveErrorCode.IncorrectValue, CorrectCount = board.CorrectCount, ErrorCount = board.ErrorCount, Row = row, Column = col, Value = value };
+                return new MoveResult { Accepted = true, IsCorrect = false, ErrorCode = MoveErrorCode.IncorrectValue, CorrectCount = board.CorrectCount, ErrorCount = board.ErrorCount, BoardChanged = oldValue != value, Row = row, Column = col, Value = value };
             }
-            board.CurrentValues[row, col] = value;
-            if (!oldWasCorrect) board.CorrectCount++;
+            board.CorrectCount++;
             var result = Success(board, row, col, value, true);
             if (board.CorrectCount == board.TotalEmptyCells) Finish(match, match.PlayerAId == null ? null : (ReferenceEquals(board, match.BoardA) ? match.PlayerAId : match.PlayerBId), MatchFinishReason.Completed, _clock.UtcNow);
             return result;

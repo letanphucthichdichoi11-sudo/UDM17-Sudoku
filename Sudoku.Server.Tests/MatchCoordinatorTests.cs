@@ -61,6 +61,13 @@ namespace Sudoku.Server.Tests
                 emptyRow,
                 emptyCol,
                 incorrectValue);
+            Assert.IsTrue(incorrectMove.Accepted);
+            Assert.IsFalse(incorrectMove.IsCorrect);
+            Assert.AreEqual(MoveErrorCode.IncorrectValue, incorrectMove.ErrorCode);
+            Assert.AreEqual(incorrectValue,
+                matches.GetPlayerSnapshot(match.MatchId, match.PlayerAId)
+                    .OwnBoard[emptyRow, emptyCol]);
+
             MoveResult correctMove = matches.SubmitMove(
                 match.MatchId,
                 match.PlayerAId,
@@ -68,9 +75,6 @@ namespace Sudoku.Server.Tests
                 emptyRow,
                 emptyCol,
                 correctValue);
-
-            Assert.IsFalse(incorrectMove.Accepted);
-            Assert.AreEqual(MoveErrorCode.IncorrectValue, incorrectMove.ErrorCode);
             Assert.IsTrue(correctMove.Accepted);
             Assert.IsTrue(correctMove.IsCorrect);
         }
@@ -284,6 +288,108 @@ namespace Sudoku.Server.Tests
             Assert.AreEqual(originalValue, match.SolutionGrid[0, 0]);
         }
 
+        [TestMethod]
+        public void PlayerMove_ChangesOnlyOwnBoardAtTheExactCoordinate()
+        {
+            GeneratedSudoku sudoku = CreateGeneratedSudoku();
+            var matches = new MatchManager();
+            Match match = matches.StartMatch(
+                Guid.NewGuid(), Guid.NewGuid(), "player-a", "player-b",
+                sudoku.Puzzle, sudoku.Solution, TimeSpan.FromMinutes(10));
+            matches.MarkPlayerReady(match.MatchId, "player-a");
+            matches.MarkPlayerReady(match.MatchId, "player-b");
+            FindEmptyCell(sudoku.Puzzle, out int row, out int column);
+
+            int value = sudoku.Solution[row, column];
+            MoveResult result = matches.SubmitMove(
+                match.MatchId,
+                "player-a",
+                "exact-coordinate",
+                row,
+                column,
+                value);
+
+            Assert.IsTrue(result.Accepted);
+            Assert.AreEqual(value, match.BoardA.CurrentValues[row, column]);
+            Assert.AreEqual(0, match.BoardB.CurrentValues[row, column]);
+
+            int differences = 0;
+            for (int currentRow = 0; currentRow < 9; currentRow++)
+            for (int currentColumn = 0; currentColumn < 9; currentColumn++)
+            {
+                if (match.BoardA.CurrentValues[currentRow, currentColumn] !=
+                    sudoku.Puzzle[currentRow, currentColumn])
+                {
+                    differences++;
+                }
+            }
+            Assert.AreEqual(1, differences);
+        }
+
+        [TestMethod]
+        public void DuplicateMoveId_IsAppliedOnceAndSnapshotRestoresBoard()
+        {
+            GeneratedSudoku sudoku = CreateGeneratedSudoku();
+            var matches = new MatchManager();
+            Match match = matches.StartMatch(
+                Guid.NewGuid(), Guid.NewGuid(), "player-a", "player-b",
+                sudoku.Puzzle, sudoku.Solution, TimeSpan.FromMinutes(10));
+            matches.MarkPlayerReady(match.MatchId, "player-a");
+            matches.MarkPlayerReady(match.MatchId, "player-b");
+            FindEmptyCell(sudoku.Puzzle, out int row, out int column);
+
+            int value = sudoku.Solution[row, column];
+            MoveResult first = matches.SubmitMove(
+                match.MatchId, "player-a", "same-move-id", row, column, value);
+            MoveResult duplicate = matches.SubmitMove(
+                match.MatchId, "player-a", "same-move-id", row, column, value);
+            PlayerMatchSnapshot restored = matches.GetPlayerSnapshot(
+                match.MatchId,
+                "player-a");
+
+            Assert.IsTrue(first.Accepted);
+            Assert.AreSame(first, duplicate);
+            Assert.AreEqual(1, restored.OwnCorrectCount);
+            Assert.AreEqual(value, restored.OwnBoard[row, column]);
+            Assert.AreEqual(1, match.ProcessedMoves.Count);
+        }
+
+        [TestMethod]
+        public void GivenCell_CannotBeModifiedByEitherPlayer()
+        {
+            GeneratedSudoku sudoku = CreateGeneratedSudoku();
+            var matches = new MatchManager();
+            Match match = matches.StartMatch(
+                Guid.NewGuid(), Guid.NewGuid(), "player-a", "player-b",
+                sudoku.Puzzle, sudoku.Solution, TimeSpan.FromMinutes(10));
+            matches.MarkPlayerReady(match.MatchId, "player-a");
+            matches.MarkPlayerReady(match.MatchId, "player-b");
+
+            int row = 0;
+            int column = 0;
+            while (sudoku.Puzzle[row, column] == 0)
+            {
+                column++;
+                if (column == 9)
+                {
+                    row++;
+                    column = 0;
+                }
+            }
+
+            MoveResult playerA = matches.SubmitMove(
+                match.MatchId, "player-a", "given-a", row, column, 0);
+            MoveResult playerB = matches.SubmitMove(
+                match.MatchId, "player-b", "given-b", row, column, 0);
+
+            Assert.AreEqual(MoveErrorCode.GivenCellLocked, playerA.ErrorCode);
+            Assert.AreEqual(MoveErrorCode.GivenCellLocked, playerB.ErrorCode);
+            Assert.AreEqual(sudoku.Puzzle[row, column],
+                match.BoardA.CurrentValues[row, column]);
+            Assert.AreEqual(sudoku.Puzzle[row, column],
+                match.BoardB.CurrentValues[row, column]);
+        }
+
         private static MatchCoordinator CreateCoordinator(
             out RoomManager rooms,
             out MatchManager matches)
@@ -312,6 +418,21 @@ namespace Sudoku.Server.Tests
             return new SudokuGenerator().GeneratePuzzle(
                 SudokuDifficulty.Easy,
                 20260812);
+        }
+
+        private static void FindEmptyCell(
+            int[,] puzzle,
+            out int row,
+            out int column)
+        {
+            for (row = 0; row < 9; row++)
+            for (column = 0; column < 9; column++)
+            {
+                if (puzzle[row, column] == 0)
+                    return;
+            }
+
+            throw new InvalidOperationException("Test puzzle has no empty cell.");
         }
 
         private sealed class FailingSudokuGenerator : ISudokuGenerator

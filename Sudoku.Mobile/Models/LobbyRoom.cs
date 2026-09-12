@@ -11,6 +11,7 @@ public class LobbyRoom
     public LobbyPlayer? Player2 { get; set; }
 
     public bool HasActiveMatch { get; set; }
+    public Sudoku.Shared.Models.SudokuDifficultyLevel Difficulty { get; set; }
 
     public int PlayerCount
     {

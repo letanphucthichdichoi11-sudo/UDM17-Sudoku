@@ -16,13 +16,15 @@ namespace Sudoku.Server.Game
 
         public Room CreateRoom(
             string roomName,
-            Player owner)
+            Player owner,
+            SudokuDifficultyLevel difficulty = SudokuDifficultyLevel.Medium)
         {
             Guid roomId = Guid.NewGuid();
 
             Room room = new Room(
                 roomId,
-                roomName
+                roomName,
+                difficulty: difficulty
             );
 
             room.Players.Add(owner);

@@ -35,6 +35,7 @@ namespace Sudoku.Shared.Network
         public string RoomName { get; set; }
         public List<LobbyPlayerDto> Players { get; set; }
         public bool HasActiveMatch { get; set; }
+        public SudokuDifficultyLevel Difficulty { get; set; }
     }
 
     public sealed class RoomListResponse
@@ -45,6 +46,7 @@ namespace Sudoku.Shared.Network
     public sealed class CreateRoomRequest
     {
         public string RoomName { get; set; }
+        public SudokuDifficultyLevel Difficulty { get; set; }
     }
 
     public sealed class RoomRequest
