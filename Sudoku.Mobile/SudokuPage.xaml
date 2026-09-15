@@ -19,7 +19,7 @@
                 Stroke="Transparent" StrokeShape="RoundRectangle 10" Opacity="0.30"
                 HorizontalOptions="Start" VerticalOptions="End" Margin="-6,0,0,70" Rotation="12" />
 
-        <ScrollView>
+        <ScrollView x:Name="GameplayScrollView">
             <VerticalStackLayout x:Name="GameplayLayout" Padding="8,5,8,8" Spacing="7"
                                  WidthRequest="424" HorizontalOptions="Center" MaximumWidthRequest="424">
                 <Border StrokeShape="RoundRectangle 16" Stroke="#DDD6FE" StrokeThickness="2"

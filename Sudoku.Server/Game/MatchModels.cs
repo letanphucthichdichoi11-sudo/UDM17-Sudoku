@@ -7,7 +7,7 @@ namespace Sudoku.Server.Game
     internal enum MatchState { Preparing, Ongoing, Finished, Aborted, Archived }
     internal enum ConnectionStatus { Connected, Disconnected }
     internal enum MatchFinishReason { Completed, TimeUp, TechnicalWinDisconnect, BothDisconnected, ServerRestart, PreparingTimeout }
-    internal enum MoveErrorCode { None, MatchNotFound, MatchNotOngoing, MatchExpired, NotAPlayer, DuplicateMoveNotFound, OutOfRange, GivenCellLocked, InvalidValue, IncorrectValue }
+    internal enum MoveErrorCode { None, MatchNotFound, MatchNotOngoing, MatchExpired, NotAPlayer, DuplicateMoveNotFound, OutOfRange, GivenCellLocked, InvalidValue, IncorrectValue, UnresolvedMistake }
 
     internal sealed class PlayerBoardState
     {
@@ -16,6 +16,9 @@ namespace Sudoku.Server.Game
         public int CorrectCount { get; set; }
         public int ErrorCount { get; set; }
         public int TotalEmptyCells { get; private set; }
+        public bool HasUnresolvedMistake { get; set; }
+        public int UnresolvedMistakeRow { get; set; } = -1;
+        public int UnresolvedMistakeColumn { get; set; } = -1;
 
         public PlayerBoardState(int[,] puzzle)
         {
@@ -103,6 +106,12 @@ namespace Sudoku.Server.Game
         public int OwnErrorCount { get; set; }
         public int OpponentCorrectCount { get; set; }
         public int OpponentErrorCount { get; set; }
+        public bool OwnHasUnresolvedMistake { get; set; }
+        public int OwnUnresolvedMistakeRow { get; set; }
+        public int OwnUnresolvedMistakeColumn { get; set; }
+        public bool OpponentHasUnresolvedMistake { get; set; }
+        public int OpponentUnresolvedMistakeRow { get; set; }
+        public int OpponentUnresolvedMistakeColumn { get; set; }
         public TimeSpan TimeLeft { get; set; }
         public DateTime ServerUtcNow { get; set; }
         public DateTime? StartedAtUtc { get; set; }

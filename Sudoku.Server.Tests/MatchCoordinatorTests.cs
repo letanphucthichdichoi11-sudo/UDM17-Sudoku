@@ -68,10 +68,80 @@ namespace Sudoku.Server.Tests
                 matches.GetPlayerSnapshot(match.MatchId, match.PlayerAId)
                     .OwnBoard[emptyRow, emptyCol]);
 
+            MatchStatusResponse lockedStatus = matches.GetPlayerStatus(
+                match.MatchId,
+                match.PlayerAId);
+            Assert.IsTrue(lockedStatus.OwnHasUnresolvedMistake);
+            Assert.AreEqual(emptyRow, lockedStatus.OwnUnresolvedMistakeRow);
+            Assert.AreEqual(emptyCol, lockedStatus.OwnUnresolvedMistakeColumn);
+            Assert.AreEqual(1, lockedStatus.OwnErrorCount);
+
+            int otherRow = -1;
+            int otherColumn = -1;
+            for (int row = 0; row < 9 && otherRow < 0; row++)
+            for (int column = 0; column < 9; column++)
+            {
+                if (match.OriginalPuzzle[row, column] == 0 &&
+                    (row != emptyRow || column != emptyCol))
+                {
+                    otherRow = row;
+                    otherColumn = column;
+                    break;
+                }
+            }
+
+            MoveResult lockedMove = matches.SubmitMove(
+                match.MatchId,
+                match.PlayerAId,
+                "move-while-locked",
+                otherRow,
+                otherColumn,
+                match.SolutionGrid[otherRow, otherColumn]);
+            Assert.IsFalse(lockedMove.Accepted);
+            Assert.AreEqual(MoveErrorCode.UnresolvedMistake, lockedMove.ErrorCode);
+            Assert.AreEqual(1, match.BoardA.ErrorCount);
+            Assert.AreEqual(incorrectValue, match.BoardA.CurrentValues[emptyRow, emptyCol]);
+            Assert.AreEqual(0, match.BoardA.CurrentValues[otherRow, otherColumn]);
+
+            FindEmptyCell(match.OriginalPuzzleB, out int playerBRow, out int playerBColumn);
+            MoveResult independentPlayerMove = matches.SubmitMove(
+                match.MatchId,
+                match.PlayerBId,
+                "player-b-independent-move",
+                playerBRow,
+                playerBColumn,
+                match.SolutionGridB[playerBRow, playerBColumn]);
+            Assert.IsTrue(independentPlayerMove.Accepted);
+            Assert.IsTrue(independentPlayerMove.IsCorrect);
+            Assert.IsFalse(match.BoardB.HasUnresolvedMistake);
+            Assert.IsTrue(match.BoardA.HasUnresolvedMistake);
+
+            MoveResult unrelatedErase = matches.SubmitMove(
+                match.MatchId,
+                match.PlayerAId,
+                "erase-unrelated-while-locked",
+                otherRow,
+                otherColumn,
+                0);
+            Assert.IsFalse(unrelatedErase.Accepted);
+            Assert.AreEqual(MoveErrorCode.UnresolvedMistake, unrelatedErase.ErrorCode);
+            Assert.IsTrue(match.BoardA.HasUnresolvedMistake);
+
+            MoveResult erasedMove = matches.SubmitMove(
+                match.MatchId,
+                match.PlayerAId,
+                "erase-incorrect",
+                emptyRow,
+                emptyCol,
+                0);
+            Assert.IsTrue(erasedMove.Accepted);
+            Assert.IsFalse(match.BoardA.HasUnresolvedMistake);
+            Assert.AreEqual(1, match.BoardA.ErrorCount);
+
             MoveResult correctMove = matches.SubmitMove(
                 match.MatchId,
                 match.PlayerAId,
-                "move-correct",
+                "move-correct-after-erase",
                 emptyRow,
                 emptyCol,
                 correctValue);
