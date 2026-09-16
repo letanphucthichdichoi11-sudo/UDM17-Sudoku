@@ -168,7 +168,7 @@ namespace Sudoku.Server.Game
                 var own = match.GetBoard(playerId);
                 var opponent = match.GetBoard(match.GetOpponent(playerId));
                 DateTime now = _clock.UtcNow;
-                return new PlayerMatchSnapshot { MatchId = matchId, OriginalPuzzle = MatchGrid.Clone(match.GetPuzzle(playerId)), OwnBoard = MatchGrid.Clone(own.CurrentValues), OpponentBoard = MatchGrid.Clone(opponent.CurrentValues), OwnCorrectCount = own.CorrectCount, OwnErrorCount = own.ErrorCount, OpponentCorrectCount = opponent.CorrectCount, OpponentErrorCount = opponent.ErrorCount, TimeLeft = GetTimeLeft(match, now), ServerUtcNow = now, StartedAtUtc = match.StartedAtUtc, EndsAtUtc = match.EndsAtUtc, State = match.State };
+                return new PlayerMatchSnapshot { MatchId = matchId, OriginalPuzzle = MatchGrid.Clone(match.GetPuzzle(playerId)), OwnBoard = MatchGrid.Clone(own.CurrentValues), OpponentBoard = MatchGrid.Clone(opponent.CurrentValues), OwnCorrectCount = own.CorrectCount, OwnErrorCount = own.ErrorCount, OpponentCorrectCount = opponent.CorrectCount, OpponentErrorCount = opponent.ErrorCount, OwnHasUnresolvedMistake = own.HasUnresolvedMistake, OwnUnresolvedMistakeRow = own.UnresolvedMistakeRow, OwnUnresolvedMistakeColumn = own.UnresolvedMistakeColumn, OpponentHasUnresolvedMistake = opponent.HasUnresolvedMistake, OpponentUnresolvedMistakeRow = opponent.UnresolvedMistakeRow, OpponentUnresolvedMistakeColumn = opponent.UnresolvedMistakeColumn, TimeLeft = GetTimeLeft(match, now), ServerUtcNow = now, StartedAtUtc = match.StartedAtUtc, EndsAtUtc = match.EndsAtUtc, State = match.State };
             }
         }
 
@@ -199,6 +199,12 @@ namespace Sudoku.Server.Game
                     OwnErrorCount = snapshot.OwnErrorCount,
                     OpponentCorrectCount = snapshot.OpponentCorrectCount,
                     OpponentErrorCount = snapshot.OpponentErrorCount,
+                    OwnHasUnresolvedMistake = snapshot.OwnHasUnresolvedMistake,
+                    OwnUnresolvedMistakeRow = snapshot.OwnUnresolvedMistakeRow,
+                    OwnUnresolvedMistakeColumn = snapshot.OwnUnresolvedMistakeColumn,
+                    OpponentHasUnresolvedMistake = snapshot.OpponentHasUnresolvedMistake,
+                    OpponentUnresolvedMistakeRow = snapshot.OpponentUnresolvedMistakeRow,
+                    OpponentUnresolvedMistakeColumn = snapshot.OpponentUnresolvedMistakeColumn,
                     FinishReason = MapFinishReason(match.Result),
                     WinnerPlayerId = match.Result == null ? null : match.Result.WinnerPlayerId
                 };
@@ -330,6 +336,30 @@ namespace Sudoku.Server.Game
             var oldValue = board.CurrentValues[row, col];
             int[,] solution = match.GetSolution(board);
             var oldWasCorrect = oldValue != 0 && oldValue == solution[row, col];
+
+            if (board.HasUnresolvedMistake)
+            {
+                if (value != 0 || row != board.UnresolvedMistakeRow ||
+                    col != board.UnresolvedMistakeColumn)
+                    return new MoveResult
+                    {
+                        ErrorCode = MoveErrorCode.UnresolvedMistake,
+                        CorrectCount = board.CorrectCount,
+                        ErrorCount = board.ErrorCount,
+                        Row = board.UnresolvedMistakeRow,
+                        Column = board.UnresolvedMistakeColumn,
+                        Value = board.CurrentValues[
+                            board.UnresolvedMistakeRow,
+                            board.UnresolvedMistakeColumn]
+                    };
+
+                board.CurrentValues[row, col] = 0;
+                board.HasUnresolvedMistake = false;
+                board.UnresolvedMistakeRow = -1;
+                board.UnresolvedMistakeColumn = -1;
+                return Success(board, row, col, value, oldValue != 0);
+            }
+
             if (value == 0)
             {
                 board.CurrentValues[row, col] = 0;
@@ -342,6 +372,9 @@ namespace Sudoku.Server.Game
             if (value != solution[row, col])
             {
                 board.ErrorCount++;
+                board.HasUnresolvedMistake = true;
+                board.UnresolvedMistakeRow = row;
+                board.UnresolvedMistakeColumn = col;
                 return new MoveResult { Accepted = true, IsCorrect = false, ErrorCode = MoveErrorCode.IncorrectValue, CorrectCount = board.CorrectCount, ErrorCount = board.ErrorCount, BoardChanged = oldValue != value, Row = row, Column = col, Value = value };
             }
             board.CorrectCount++;

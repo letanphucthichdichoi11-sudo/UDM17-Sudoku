@@ -22,6 +22,8 @@ internal static class DevelopmentLaunchOptions
                 "--dev-board-probe",
                 StringComparison.OrdinalIgnoreCase));
 
+    internal static bool StageMistake => HasArgument("--dev-stage-mistake");
+
     internal static bool ForceWin => HasArgument("--dev-force-win");
     internal static bool AutoHomeFromResult => HasArgument("--dev-result-home");
     internal static bool OpenSavedResult => HasArgument("--dev-open-last-result");
@@ -162,6 +164,7 @@ internal static class DevelopmentLaunchOptions
 #else
     internal static bool AutoQuickMatch => false;
     internal static bool RunBoardProbe => false;
+    internal static bool StageMistake => false;
     internal static bool ForceWin => false;
     internal static bool AutoHomeFromResult => false;
     internal static bool OpenSavedResult => false;

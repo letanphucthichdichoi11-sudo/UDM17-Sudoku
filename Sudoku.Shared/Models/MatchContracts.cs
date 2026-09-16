@@ -69,6 +69,12 @@ namespace Sudoku.Shared.Models
         public int OwnErrorCount { get; set; }
         public int OpponentCorrectCount { get; set; }
         public int OpponentErrorCount { get; set; }
+        public bool OwnHasUnresolvedMistake { get; set; }
+        public int OwnUnresolvedMistakeRow { get; set; }
+        public int OwnUnresolvedMistakeColumn { get; set; }
+        public bool OpponentHasUnresolvedMistake { get; set; }
+        public int OpponentUnresolvedMistakeRow { get; set; }
+        public int OpponentUnresolvedMistakeColumn { get; set; }
         public MatchFinishReasonCode? FinishReason { get; set; }
         public string WinnerPlayerId { get; set; }
     }

@@ -17,6 +17,7 @@ public partial class SudokuPage : ContentPage
     private static readonly Color CellLine = Color.FromArgb("#C4B5FD");
     private static readonly Color EnteredNumber = Color.FromArgb("#7C3AED");
     private static readonly Color GivenNumber = Color.FromArgb("#1F2937");
+    private static readonly Color IncorrectNumber = Color.FromArgb("#DC2626");
 
     private readonly int[,] _originalPuzzle = new int[9, 9];
     private readonly int[,] _myBoard = new int[9, 9];
@@ -31,6 +32,11 @@ public partial class SudokuPage : ContentPage
     private int _selectedRow = -1;
     private int _selectedColumn = -1;
     private int _highlightedNumber;
+    private int _unresolvedMistakeRow = -1;
+    private int _unresolvedMistakeColumn = -1;
+    private int _opponentMistakeRow = -1;
+    private int _opponentMistakeColumn = -1;
+    private int _localMistakeCount;
     private bool _showingOpponent;
     private bool _isSubmittingMove;
     private bool _developmentScreenshotCaptured;
@@ -83,6 +89,8 @@ public partial class SudokuPage : ContentPage
 
         _developmentScreenshotCaptured = true;
         await Task.Delay(1200);
+        if (DevelopmentLaunchOptions.StageMistake)
+            await RunDevelopmentStageMistakeAsync();
         await DevelopmentLaunchOptions.CaptureScreenshotAsync();
         if (DevelopmentLaunchOptions.RunBoardProbe)
             await RunDevelopmentBoardProbeAsync();
@@ -187,6 +195,7 @@ public partial class SudokuPage : ContentPage
                 ? match.OpponentBoard
                 : match.Puzzle,
             _opponentBoard);
+        SynchronizeMistakes(match);
         return true;
     }
 
@@ -219,6 +228,19 @@ public partial class SudokuPage : ContentPage
                     int index = SudokuBoardCoordinates.ToIndex(result.Row, result.Column);
                     match.OpponentBoard[index] = result.Value;
                 }
+
+                if (!result.IsCorrect && result.Value != 0)
+                {
+                    _opponentMistakeRow = result.Row;
+                    _opponentMistakeColumn = result.Column;
+                }
+                else if (result.Value == 0 &&
+                         result.Row == _opponentMistakeRow &&
+                         result.Column == _opponentMistakeColumn)
+                {
+                    _opponentMistakeRow = -1;
+                    _opponentMistakeColumn = -1;
+                }
             }
 
             UpdateProgressDisplay();
@@ -245,6 +267,9 @@ public partial class SudokuPage : ContentPage
                 CopyFlatBoard(status.OwnBoard, _myBoard);
             if (SudokuBoardCoordinates.IsValidFlatBoard(status.OpponentBoard!))
                 CopyFlatBoard(status.OpponentBoard, _opponentBoard);
+            SynchronizeMistakes(status);
+            UpdateInputAvailability();
+            UpdateCellStatus();
             UpdateProgressDisplay();
             ApplyBoardVisuals();
         });
@@ -323,16 +348,14 @@ public partial class SudokuPage : ContentPage
 
     private async Task<bool> EnterNumberAsync(int value)
     {
+        if (HasUnresolvedMistake || _showingOpponent || _isSubmittingMove ||
+            !HasSelectedCell || _originalPuzzle[_selectedRow, _selectedColumn] != 0)
+            return false;
+
         _highlightedNumber = value;
-        int previousValue = HasSelectedCell
-            ? _myBoard[_selectedRow, _selectedColumn]
-            : 0;
+        int previousValue = _myBoard[_selectedRow, _selectedColumn];
         ApplyBoardVisuals();
         ApplyNumberPadVisuals();
-
-        if (_showingOpponent || _isSubmittingMove || !HasSelectedCell ||
-            _originalPuzzle[_selectedRow, _selectedColumn] != 0)
-            return false;
 
         MatchStatusResponse? match = MatchSession.CurrentMatch;
         SetMyCellValue(value, match);
@@ -355,6 +378,9 @@ public partial class SudokuPage : ContentPage
                     ApplyBoardVisuals();
                     return false;
                 }
+
+                if (!result.IsCorrect)
+                    SetUnresolvedMistake(_selectedRow, _selectedColumn);
             }
             catch (Exception exception)
             {
@@ -368,7 +394,14 @@ public partial class SudokuPage : ContentPage
                 _isSubmittingMove = false;
             }
         }
+        else if (value != _solution[_selectedRow, _selectedColumn])
+        {
+            _localMistakeCount++;
+            SetUnresolvedMistake(_selectedRow, _selectedColumn);
+        }
 
+        UpdateInputAvailability();
+        UpdateCellStatus();
         UpdateProgressDisplay();
         ApplyBoardVisuals();
         return true;
@@ -390,13 +423,7 @@ public partial class SudokuPage : ContentPage
         OpponentTabButton.BorderColor = _showingOpponent ? Color.FromArgb("#5B21B6") : Color.FromArgb("#DDD6FE");
         OpponentReadOnlyBanner.IsVisible = _showingOpponent;
 
-        foreach (Button button in _numberButtons)
-            button.IsEnabled = !_showingOpponent;
-        EraseButton.IsEnabled = !_showingOpponent;
-        HintButton.IsEnabled = !_showingOpponent;
-        NumberPadCard.Opacity = _showingOpponent ? 0.40 : 1;
-        EraseButton.Opacity = _showingOpponent ? 0.40 : 1;
-        HintButton.Opacity = _showingOpponent ? 0.40 : 1;
+        UpdateInputAvailability();
 
         OpponentNameLabel.Text = opponentName;
         UpdateCellStatus();
@@ -422,6 +449,9 @@ public partial class SudokuPage : ContentPage
                 bool related = HasSelectedCell &&
                     (row == _selectedRow || column == _selectedColumn ||
                      row / 3 == _selectedRow / 3 && column / 3 == _selectedColumn / 3);
+                bool incorrect = _showingOpponent
+                    ? row == _opponentMistakeRow && column == _opponentMistakeColumn
+                    : row == _unresolvedMistakeRow && column == _unresolvedMistakeColumn;
 
                 button.Text = value == 0 ? String.Empty : value.ToString();
                 button.TextColor = _originalPuzzle[row, column] == 0
@@ -445,6 +475,8 @@ public partial class SudokuPage : ContentPage
                     cellBorder.StrokeThickness = 2;
                     cellBorder.ZIndex = 10;
                 }
+                if (incorrect)
+                    button.TextColor = IncorrectNumber;
             }
         }
     }
@@ -536,9 +568,14 @@ public partial class SudokuPage : ContentPage
 
     private async Task<bool> EraseSelectedCellAsync()
     {
-        if (_showingOpponent || _isSubmittingMove || !HasSelectedCell ||
-            _originalPuzzle[_selectedRow, _selectedColumn] != 0 ||
-            _myBoard[_selectedRow, _selectedColumn] == 0)
+        if (_showingOpponent || _isSubmittingMove)
+            return false;
+
+        int eraseRow = HasUnresolvedMistake ? _unresolvedMistakeRow : _selectedRow;
+        int eraseColumn = HasUnresolvedMistake ? _unresolvedMistakeColumn : _selectedColumn;
+        if (eraseRow is < 0 or > 8 || eraseColumn is < 0 or > 8 ||
+            _originalPuzzle[eraseRow, eraseColumn] != 0 ||
+            _myBoard[eraseRow, eraseColumn] == 0)
             return false;
 
         MatchStatusResponse? match = MatchSession.CurrentMatch;
@@ -548,7 +585,7 @@ public partial class SudokuPage : ContentPage
             try
             {
                 MoveResultResponse result = await _matchService.SubmitMoveAsync(
-                    match.MatchId, _selectedRow, _selectedColumn, 0);
+                    match.MatchId, eraseRow, eraseColumn, 0);
                 if (!result.Accepted)
                     return false;
                 match.OwnCorrectCount = result.CorrectCount;
@@ -565,8 +602,12 @@ public partial class SudokuPage : ContentPage
             }
         }
 
-        SetMyCellValue(0, match);
+        SetMyCellValue(eraseRow, eraseColumn, 0, match);
+        if (eraseRow == _unresolvedMistakeRow && eraseColumn == _unresolvedMistakeColumn)
+            ClearUnresolvedMistake();
         _highlightedNumber = 0;
+        UpdateInputAvailability();
+        UpdateCellStatus();
         UpdateProgressDisplay();
         ApplyBoardVisuals();
         ApplyNumberPadVisuals();
@@ -575,6 +616,9 @@ public partial class SudokuPage : ContentPage
 
     private async void OnHintClicked(object? sender, EventArgs e)
     {
+        if (HasUnresolvedMistake)
+            return;
+
         await DisplayAlertAsync(
             "Ranked match",
             "Hints are disabled during a competitive duel.",
@@ -583,18 +627,76 @@ public partial class SudokuPage : ContentPage
 
     private void UpdateCellStatus()
     {
-        CellStatusLabel.Text = HasSelectedCell
+        string cell = HasSelectedCell
             ? $"Cell: R{_selectedRow + 1} C{_selectedColumn + 1}"
             : "Cell: --";
+        CellStatusLabel.Text = $"{cell}     Mistakes: {CurrentMistakeCount}";
     }
 
     private void SetMyCellValue(int value, MatchStatusResponse? match)
     {
-        _myBoard[_selectedRow, _selectedColumn] = value;
+        SetMyCellValue(_selectedRow, _selectedColumn, value, match);
+    }
+
+    private void SetMyCellValue(int row, int column, int value, MatchStatusResponse? match)
+    {
+        _myBoard[row, column] = value;
         if (match?.OwnBoard?.Length == 81)
             match.OwnBoard[SudokuBoardCoordinates.ToIndex(
-                _selectedRow,
-                _selectedColumn)] = value;
+                row,
+                column)] = value;
+    }
+
+    private void SynchronizeMistakes(MatchStatusResponse match)
+    {
+        _unresolvedMistakeRow = match.OwnHasUnresolvedMistake
+            ? match.OwnUnresolvedMistakeRow
+            : -1;
+        _unresolvedMistakeColumn = match.OwnHasUnresolvedMistake
+            ? match.OwnUnresolvedMistakeColumn
+            : -1;
+        _opponentMistakeRow = match.OpponentHasUnresolvedMistake
+            ? match.OpponentUnresolvedMistakeRow
+            : -1;
+        _opponentMistakeColumn = match.OpponentHasUnresolvedMistake
+            ? match.OpponentUnresolvedMistakeColumn
+            : -1;
+    }
+
+    private void SetUnresolvedMistake(int row, int column)
+    {
+        _unresolvedMistakeRow = row;
+        _unresolvedMistakeColumn = column;
+        if (MatchSession.CurrentMatch is { } match)
+        {
+            match.OwnHasUnresolvedMistake = true;
+            match.OwnUnresolvedMistakeRow = row;
+            match.OwnUnresolvedMistakeColumn = column;
+        }
+    }
+
+    private void ClearUnresolvedMistake()
+    {
+        _unresolvedMistakeRow = -1;
+        _unresolvedMistakeColumn = -1;
+        if (MatchSession.CurrentMatch is { } match)
+        {
+            match.OwnHasUnresolvedMistake = false;
+            match.OwnUnresolvedMistakeRow = -1;
+            match.OwnUnresolvedMistakeColumn = -1;
+        }
+    }
+
+    private void UpdateInputAvailability()
+    {
+        bool numberEntryEnabled = !_showingOpponent && !HasUnresolvedMistake;
+        foreach (Button button in _numberButtons)
+            button.IsEnabled = numberEntryEnabled;
+        EraseButton.IsEnabled = !_showingOpponent;
+        HintButton.IsEnabled = numberEntryEnabled;
+        NumberPadCard.Opacity = numberEntryEnabled ? 1 : 0.40;
+        EraseButton.Opacity = _showingOpponent ? 0.40 : 1;
+        HintButton.Opacity = numberEntryEnabled ? 1 : 0.40;
     }
 
     private string GetOpponentName()
@@ -662,6 +764,8 @@ public partial class SudokuPage : ContentPage
 
         int editableRow = -1;
         int editableColumn = -1;
+        int secondEditableRow = -1;
+        int secondEditableColumn = -1;
         int givenRow = -1;
         int givenColumn = -1;
         for (int row = 0; row < 9; row++)
@@ -673,6 +777,11 @@ public partial class SudokuPage : ContentPage
                     editableRow = row;
                     editableColumn = column;
                 }
+                else if (_originalPuzzle[row, column] == 0 && secondEditableRow < 0)
+                {
+                    secondEditableRow = row;
+                    secondEditableColumn = column;
+                }
                 else if (_originalPuzzle[row, column] != 0 && givenRow < 0)
                 {
                     givenRow = row;
@@ -681,27 +790,40 @@ public partial class SudokuPage : ContentPage
             }
         }
 
-        bool allNumbersEntered = editableRow >= 0;
-        if (allNumbersEntered)
+        bool wrongAnswerLockedInput = editableRow >= 0 && secondEditableRow >= 0;
+        bool eraseResolvedMistake = false;
+        bool correctAnswerAccepted = false;
+        if (wrongAnswerLockedInput)
         {
+            var probeSolution = new int[9, 9];
+            Array.Copy(_originalPuzzle, probeSolution, _originalPuzzle.Length);
+            wrongAnswerLockedInput = FillBoard(probeSolution);
             OnCellClicked(_cellButtons[editableRow, editableColumn], EventArgs.Empty);
-            for (int value = 1; value <= 9; value++)
-            {
-                bool accepted = await EnterNumberAsync(value);
-                bool rendered = _cellButtons[editableRow, editableColumn].Text == value.ToString();
-                allNumbersEntered &= accepted &&
-                    _myBoard[editableRow, editableColumn] == value &&
-                    rendered;
-                results.Add($"number{value}Entered={accepted && rendered}");
-            }
-        }
-        results.Add($"numbers1To9Entered={allNumbersEntered}");
+            int correctValue = probeSolution[editableRow, editableColumn];
+            int wrongValue = correctValue == 9 ? 1 : correctValue + 1;
+            int mistakesBefore = CurrentMistakeCount;
+            bool wrongAccepted = await EnterNumberAsync(wrongValue);
 
-        bool eraseWorked = await EraseSelectedCellAsync();
-        eraseWorked &= editableRow >= 0 &&
-            _myBoard[editableRow, editableColumn] == 0 &&
-            _cellButtons[editableRow, editableColumn].Text == String.Empty;
-        results.Add($"eraseWorked={eraseWorked}");
+            OnCellClicked(_cellButtons[secondEditableRow, secondEditableColumn], EventArgs.Empty);
+            bool blocked = !await EnterNumberAsync(1);
+            wrongAnswerLockedInput = wrongAccepted && blocked && HasUnresolvedMistake &&
+                _myBoard[editableRow, editableColumn] == wrongValue &&
+                _cellButtons[editableRow, editableColumn].TextColor == IncorrectNumber &&
+                CurrentMistakeCount == mistakesBefore + 1;
+
+            eraseResolvedMistake = await EraseSelectedCellAsync() &&
+                !HasUnresolvedMistake &&
+                _myBoard[editableRow, editableColumn] == 0 &&
+                CurrentMistakeCount == mistakesBefore + 1;
+
+            OnCellClicked(_cellButtons[editableRow, editableColumn], EventArgs.Empty);
+            correctAnswerAccepted = await EnterNumberAsync(correctValue) &&
+                _myBoard[editableRow, editableColumn] == correctValue &&
+                !HasUnresolvedMistake;
+        }
+        results.Add($"wrongAnswerLockedInput={wrongAnswerLockedInput}");
+        results.Add($"eraseResolvedMistake={eraseResolvedMistake}");
+        results.Add($"correctAnswerAccepted={correctAnswerAccepted}");
 
         bool givenLocked = givenRow >= 0;
         if (givenLocked)
@@ -743,6 +865,56 @@ public partial class SudokuPage : ContentPage
         results.Add($"all81CellsHaveBorders={everyCellHasBorder}");
         results.Add($"completedAt={DateTimeOffset.Now:O}");
         DevelopmentLaunchOptions.MarkBoardProbe(results);
+    }
+
+    private async Task RunDevelopmentStageMistakeAsync()
+    {
+        if (HasUnresolvedMistake)
+            return;
+
+        var solvedPuzzle = new int[9, 9];
+        Array.Copy(_originalPuzzle, solvedPuzzle, _originalPuzzle.Length);
+        if (!FillBoard(solvedPuzzle))
+            return;
+
+        int mistakeRow = -1;
+        int mistakeColumn = -1;
+        for (int row = 3; row <= 5 && mistakeRow < 0; row++)
+        {
+            for (int column = 0; column < 9; column++)
+            {
+                if (_originalPuzzle[row, column] != 0 || _myBoard[row, column] != 0)
+                    continue;
+                mistakeRow = row;
+                mistakeColumn = column;
+                break;
+            }
+        }
+
+        if (mistakeRow < 0)
+        {
+            for (int row = 0; row < 9 && mistakeRow < 0; row++)
+            for (int column = 0; column < 9; column++)
+            {
+                if (_originalPuzzle[row, column] != 0 || _myBoard[row, column] != 0)
+                    continue;
+                mistakeRow = row;
+                mistakeColumn = column;
+                break;
+            }
+        }
+
+        if (mistakeRow < 0)
+            return;
+
+        OnCellClicked(_cellButtons[mistakeRow, mistakeColumn], EventArgs.Empty);
+        int correctValue = solvedPuzzle[mistakeRow, mistakeColumn];
+        int wrongValue = correctValue == 9 ? 1 : correctValue + 1;
+        await EnterNumberAsync(wrongValue);
+        await GameplayScrollView.ScrollToAsync(
+            BoardContainer,
+            ScrollToPosition.Start,
+            false);
     }
 
     private async Task RunDevelopmentForceWinAsync()
@@ -789,6 +961,13 @@ public partial class SudokuPage : ContentPage
 
     private bool HasSelectedCell =>
         _selectedRow is >= 0 and < 9 && _selectedColumn is >= 0 and < 9;
+
+    private bool HasUnresolvedMistake =>
+        _unresolvedMistakeRow is >= 0 and < 9 &&
+        _unresolvedMistakeColumn is >= 0 and < 9;
+
+    private int CurrentMistakeCount =>
+        MatchSession.CurrentMatch?.OwnErrorCount ?? _localMistakeCount;
 
     private int[,] CurrentBoard => _showingOpponent ? _opponentBoard : _myBoard;
 
