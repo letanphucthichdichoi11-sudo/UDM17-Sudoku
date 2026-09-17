@@ -7,9 +7,6 @@
              BackgroundColor="#F4F0FF">
 
     <Grid>
-        <!-- ========================================== -->
-        <!-- LỚP NỀN: CÁC HỌA TIẾT TRANG TRÍ MÀ BẠN CẮT -->
-        <!-- ========================================== -->
 
         <!-- 2 Vòng tròn màu tím -->
         <Image Source="bg_blob22.png" HorizontalOptions="Start" VerticalOptions="Start" Margin="-60,-40,0,0" WidthRequest="320" Opacity="0.6" Aspect="AspectFit"/>
@@ -24,11 +21,7 @@
         <Image Source="confetti_1.png" HorizontalOptions="End" VerticalOptions="End" Margin="0,0,80,180" WidthRequest="12" Aspect="AspectFit"/>
 
 
-        <!-- ========================================== -->
-        <!-- LỚP TRÊN CÙNG: KHUNG ĐĂNG KÝ (CARD)        -->
-        <!-- ========================================== -->
         <ScrollView VerticalOptions="Center">
-            <!-- Khung lưới chống cắt xén trên Windows -->
             <Grid HorizontalOptions="Center" MaximumWidthRequest="450" MinimumWidthRequest="350">
 
                 <Border StrokeShape="RoundRectangle 30" Stroke="Transparent" BackgroundColor="White" 
@@ -37,12 +30,8 @@
                         <Shadow Brush="#7C3AED" Opacity="0.15" Offset="0,15" Radius="25"/>
                     </Border.Shadow>
 
-                    <!-- Khung chứa để C# có thể ẩn/hiện form Đăng ký hoặc form OTP -->
                     <Grid>
 
-                        <!-- ========================================== -->
-                        <!-- FORM 1: ĐĂNG KÝ TÀI KHOẢN                  -->
-                        <!-- ========================================== -->
                         <VerticalStackLayout x:Name="RegisterFormLayout" Spacing="15">
 
                             <Label Text="Create Profile!" FontSize="28" FontAttributes="Bold" HorizontalOptions="Center" TextColor="#7C3AED" />
@@ -72,7 +61,7 @@
                                 </Grid>
                             </Border>
 
-                            <!-- 3 Khung Password Power dùng ảnh AI -->
+                            <!-- 3 Khung Password Power -->
                             <VerticalStackLayout Spacing="8" Margin="0,5,0,0" WidthRequest="310" HorizontalOptions="Center">
                                 <Label Text="PASSWORD POWER:" FontSize="12" FontAttributes="Bold" TextColor="#1F2937"/>
 
@@ -114,12 +103,8 @@
                         </VerticalStackLayout>
 
 
-                        <!-- ========================================== -->
-                        <!-- FORM 2: NHẬP OTP (ẨN MẶC ĐỊNH)             -->
-                        <!-- ========================================== -->
                         <VerticalStackLayout x:Name="OtpFormLayout" IsVisible="False" Spacing="20">
 
-                            <!-- Nhớ xuất file ảnh icon hòm thư này từ Figma nhé -->
                             <Image Source="icon_mailbox.png" HeightRequest="85" WidthRequest="85" HorizontalOptions="Center" Margin="0,-20,0,-20" Aspect="AspectFit" />
 
                             <Label Text="Mailbox Check!" FontSize="28" FontAttributes="Bold" HorizontalOptions="Center" TextColor="#7C3AED" />
@@ -153,7 +138,7 @@
                                 </Border>
                             </HorizontalStackLayout>
 
-                            <!-- Nút bấm Verify 3D màu xanh lá -->
+                            <!-- Nút bấm Verify -->
                             <Border StrokeShape="RoundRectangle 25" Stroke="Transparent" BackgroundColor="#10B981" HeightRequest="55" WidthRequest="310" HorizontalOptions="Center" Margin="0,15,0,0">
                                 <Border.Shadow>
                                     <Shadow Brush="#047857" Opacity="1" Offset="0,6" Radius="0"/>

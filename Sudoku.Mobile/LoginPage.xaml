@@ -26,7 +26,7 @@
 
                 <!-- LỚP DƯỚI: Thẻ màu trắng  -->
                 <Border StrokeShape="RoundRectangle 30" Stroke="Transparent" BackgroundColor="White" 
-                        Margin="0,45,0,20" Padding="20,50,20,30">
+                        Margin="0,45,0,20" Padding="20,125,20,30">
                     <Border.Shadow>
                         <Shadow Brush="#7C3AED" Opacity="0.15" Offset="0,15" Radius="25"/>
                     </Border.Shadow>
@@ -80,9 +80,9 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- LỚP TRÊN: Logo tay cầm (mascot_badge) nằm hoàn toàn độc lập, đè lên thẻ trắng -->
+                <!-- LỚP TRÊN: Logo tay cầm  -->
                 <Image Source="mascot_badge.png" HeightRequest="85" WidthRequest="85" 
-                       HorizontalOptions="Center" VerticalOptions="Start" Aspect="AspectFit" />
+                       HorizontalOptions="Center" VerticalOptions="Start" Aspect="AspectFit" TranslationY="75" />
 
             </Grid>
         </ScrollView>
