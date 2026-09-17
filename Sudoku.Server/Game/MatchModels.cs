@@ -61,6 +61,7 @@ namespace Sudoku.Server.Game
         public HashSet<string> SpectatorIds { get; private set; }
         public Dictionary<string, MoveResult> ProcessedMoves { get; private set; }
         public object SyncRoot { get; private set; }
+        public long SpectatorVersion { get; set; }
 
         public Match()
         {
@@ -122,7 +123,11 @@ namespace Sudoku.Server.Game
     internal sealed class SpectatorMatchSnapshot
     {
         public Guid MatchId { get; set; }
+        public Guid RoomId { get; set; }
+        public string PlayerAId { get; set; }
+        public string PlayerBId { get; set; }
         public int[,] OriginalPuzzle { get; set; }
+        public int[,] OriginalPuzzleB { get; set; }
         public int[,] BoardA { get; set; }
         public int[,] BoardB { get; set; }
         public int CorrectCountA { get; set; }
@@ -133,6 +138,9 @@ namespace Sudoku.Server.Game
         public DateTime ServerUtcNow { get; set; }
         public DateTime? StartedAtUtc { get; set; }
         public DateTime? EndsAtUtc { get; set; }
+        public MatchDurationMinutes Duration { get; set; }
+        public MatchState State { get; set; }
+        public long Version { get; set; }
     }
 
     internal sealed class ActiveMatchSummary

@@ -127,6 +127,7 @@ namespace Sudoku.Server.Game
                     else result = ApplyMove(match, board, row, col, value);
                 }
                 match.ProcessedMoves[moveId] = result;
+                if (result.BoardChanged) match.SpectatorVersion++;
                 _repository.SaveMove(matchId, playerId, moveId, result, _clock.UtcNow);
                 _repository.SaveMatch(match);
                 }
@@ -145,7 +146,8 @@ namespace Sudoku.Server.Game
             lock (match.SyncRoot)
             {
                 if (match.State != MatchState.Ongoing) throw new InvalidOperationException("Match is not ongoing.");
-                if (String.IsNullOrWhiteSpace(spectatorId) || match.IsPlayer(spectatorId)) throw new ArgumentException("Spectator id is not valid.");
+                if (String.IsNullOrWhiteSpace(spectatorId)) throw new ArgumentException("Spectator id is not valid.");
+                if (match.IsPlayer(spectatorId)) throw new UnauthorizedAccessException("Match players cannot join as spectators.");
                 match.SpectatorIds.Add(spectatorId);
                 return CreateSpectatorSnapshot(match, _clock.UtcNow);
             }
@@ -156,6 +158,26 @@ namespace Sudoku.Server.Game
             Match match;
             if (!_matches.TryGetValue(matchId, out match)) return;
             lock (match.SyncRoot) match.SpectatorIds.Remove(spectatorId);
+        }
+
+        public void LeaveSpectatorFromAll(string spectatorId)
+        {
+            foreach (Match match in _matches.Values)
+                lock (match.SyncRoot) match.SpectatorIds.Remove(spectatorId);
+        }
+
+        public bool IsSpectating(string playerId)
+        {
+            foreach (Match match in _matches.Values)
+                lock (match.SyncRoot)
+                    if (match.SpectatorIds.Contains(playerId)) return true;
+            return false;
+        }
+
+        public SpectatorMatchSnapshot GetSpectatorSnapshot(Guid matchId)
+        {
+            Match match = GetRequiredMatch(matchId);
+            lock (match.SyncRoot) return CreateSpectatorSnapshot(match, _clock.UtcNow);
         }
 
         public PlayerMatchSnapshot GetPlayerSnapshot(Guid matchId, string playerId)
@@ -407,8 +429,8 @@ namespace Sudoku.Server.Game
                 default: return null;
             }
         }
-        private static void Finish(Match match, string winner, MatchFinishReason reason, DateTime now) { match.State = MatchState.Finished; match.Result = new MatchResult { WinnerPlayerId = winner, Reason = reason, FinishedAtUtc = now }; }
-        private static void Abort(Match match, MatchFinishReason reason, DateTime now) { match.State = MatchState.Aborted; match.Result = new MatchResult { Reason = reason, FinishedAtUtc = now }; }
+        private static void Finish(Match match, string winner, MatchFinishReason reason, DateTime now) { match.State = MatchState.Finished; match.SpectatorVersion++; match.Result = new MatchResult { WinnerPlayerId = winner, Reason = reason, FinishedAtUtc = now }; }
+        private static void Abort(Match match, MatchFinishReason reason, DateTime now) { match.State = MatchState.Aborted; match.SpectatorVersion++; match.Result = new MatchResult { Reason = reason, FinishedAtUtc = now }; }
         private static void SetConnection(Match match, string playerId, ConnectionStatus status, DateTime now)
         {
             if (playerId == match.PlayerAId)
@@ -425,7 +447,7 @@ namespace Sudoku.Server.Game
             }
         }
         private Match GetRequiredMatch(Guid id) { Match match; if (!_matches.TryGetValue(id, out match)) throw new KeyNotFoundException("Match not found."); return match; }
-        private static SpectatorMatchSnapshot CreateSpectatorSnapshot(Match match, DateTime now) { return new SpectatorMatchSnapshot { MatchId = match.MatchId, OriginalPuzzle = MatchGrid.Clone(match.OriginalPuzzle), BoardA = MatchGrid.Clone(match.BoardA.CurrentValues), BoardB = MatchGrid.Clone(match.BoardB.CurrentValues), CorrectCountA = match.BoardA.CorrectCount, CorrectCountB = match.BoardB.CorrectCount, ErrorCountA = match.BoardA.ErrorCount, ErrorCountB = match.BoardB.ErrorCount, TimeLeft = GetTimeLeft(match, now), ServerUtcNow = now, StartedAtUtc = match.StartedAtUtc, EndsAtUtc = match.EndsAtUtc }; }
+        private static SpectatorMatchSnapshot CreateSpectatorSnapshot(Match match, DateTime now) { return new SpectatorMatchSnapshot { MatchId = match.MatchId, RoomId = match.RoomId, PlayerAId = match.PlayerAId, PlayerBId = match.PlayerBId, OriginalPuzzle = MatchGrid.Clone(match.OriginalPuzzle), OriginalPuzzleB = MatchGrid.Clone(match.OriginalPuzzleB), BoardA = MatchGrid.Clone(match.BoardA.CurrentValues), BoardB = MatchGrid.Clone(match.BoardB.CurrentValues), CorrectCountA = match.BoardA.CorrectCount, CorrectCountB = match.BoardB.CorrectCount, ErrorCountA = match.BoardA.ErrorCount, ErrorCountB = match.BoardB.ErrorCount, TimeLeft = GetTimeLeft(match, now), ServerUtcNow = now, StartedAtUtc = match.StartedAtUtc, EndsAtUtc = match.EndsAtUtc, Duration = match.Duration, State = match.State, Version = match.SpectatorVersion }; }
         private void ArchiveFinishedMatch(Match match) { lock (match.SyncRoot) { if (match.State == MatchState.Archived) return; var aborted = match.State == MatchState.Aborted; match.State = MatchState.Archived; _repository.SaveMatch(match); if (aborted) OnMatchAborted(match); else OnMatchFinished(match); } OnMatchArchived(match); }
         private static void ValidateStartArguments(
             Guid roomId,

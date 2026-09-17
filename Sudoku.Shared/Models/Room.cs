@@ -13,6 +13,7 @@ namespace Sudoku.Shared.Models
 
         public List<Player> Players { get; set; }
         public SudokuDifficultyLevel Difficulty { get; set; }
+        public MatchDurationMinutes? ChallengeDuration { get; set; }
 
         public Room(
             Guid roomId,
