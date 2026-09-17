@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Sudoku.Mobile.RoomPreparationPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#F4EFFF">
+    <ScrollView>
+        <VerticalStackLayout Padding="24,38" Spacing="18" MaximumWidthRequest="680">
+            <Label Text="ROOM PREPARATION" FontSize="13" FontAttributes="Bold" TextColor="#7C3AED" />
+            <Label x:Name="RoomNameLabel" Text="Preparing room..." FontSize="30" FontAttributes="Bold" TextColor="#3B0764" LineBreakMode="TailTruncation" />
+            <Border BackgroundColor="White" Stroke="#E9D5FF" StrokeShape="RoundRectangle 24" Padding="22">
+                <VerticalStackLayout Spacing="14">
+                    <Label x:Name="SettingsLabel" Text="Loading match settings" FontSize="14" TextColor="#6D28D9" />
+                    <Label x:Name="PlayersLabel" Text="Waiting for players" FontSize="18" FontAttributes="Bold" TextColor="#3B0764" />
+                    <Label x:Name="StatusLabel" Text="Both players must be in the room before starting." FontSize="14" TextColor="#64748B" />
+                    <ActivityIndicator x:Name="LoadingIndicator" IsRunning="False" Color="#7C3AED" />
+                    <Button x:Name="StartButton" Text="START MATCH" Clicked="OnStartClicked"
+                            BackgroundColor="#7C3AED" TextColor="White" CornerRadius="18" HeightRequest="48" IsVisible="False" />
+                    <Button x:Name="ReadyButton" Text="I'M READY" Clicked="OnReadyClicked"
+                            BackgroundColor="#06B6D4" TextColor="White" CornerRadius="18" HeightRequest="48" IsVisible="False" />
+                    <Button Text="LEAVE ROOM" Clicked="OnLeaveClicked"
+                            BackgroundColor="#F5F0FE" TextColor="#6D28D9" CornerRadius="18" HeightRequest="46" />
+                </VerticalStackLayout>
+            </Border>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

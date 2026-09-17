@@ -1,4 +1,5 @@
 using Sudoku.Mobile.Network;
+using Sudoku.Mobile.Models;
 using Sudoku.Mobile.Services;
 using Sudoku.Shared.Models;
 
@@ -67,8 +68,10 @@ public partial class CreateRoomPage : ContentPage
         try
         {
             string playerId = TcpGameClient.Shared.PlayerId ?? throw new InvalidOperationException("TCP chưa có PlayerId.");
-            await _service.CreateRoomAsync(playerId, RoomNameEntry.Text.Trim(), _difficulty);
-            await Shell.Current.GoToAsync("..");
+            LobbyRoom room = await _service.CreateRoomAsync(playerId, RoomNameEntry.Text.Trim(), _difficulty)
+                ?? throw new InvalidOperationException("Could not create room.");
+            RoomSession.CurrentRoomId = Guid.Parse(room.RoomId);
+            await Shell.Current.GoToAsync($"../{nameof(RoomPreparationPage)}");
         }
         catch (Exception ex) { await DisplayAlertAsync("Lỗi", ex.Message, "OK"); }
         finally { _creating = false; UpdateNameState(); }

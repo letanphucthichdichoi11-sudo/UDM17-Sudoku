@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Sudoku.Mobile.SpectatorPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#F4EFFF">
+    <ScrollView>
+        <VerticalStackLayout Padding="22,30" Spacing="18" MaximumWidthRequest="1100">
+            <Grid ColumnDefinitions="*,Auto">
+                <VerticalStackLayout>
+                    <Label Text="LIVE SPECTATOR" FontSize="13" FontAttributes="Bold" TextColor="#06B6D4" />
+                    <Label x:Name="TitleLabel" Text="Watching match" FontSize="27" FontAttributes="Bold" TextColor="#3B0764" />
+                </VerticalStackLayout>
+                <Button Grid.Column="1" Text="LEAVE" Clicked="OnLeaveClicked" BackgroundColor="#ECFEFF"
+                        TextColor="#0891B2" CornerRadius="18" HeightRequest="44" />
+            </Grid>
+            <Border BackgroundColor="White" Stroke="#A5F3FC" StrokeShape="RoundRectangle 18" Padding="14">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label x:Name="StatusLabel" Text="Read-only spectator mode" TextColor="#155E75" FontAttributes="Bold" />
+                    <Label Grid.Column="1" x:Name="TimerLabel" Text="--:--" TextColor="#6D28D9" FontAttributes="Bold" />
+                </Grid>
+            </Border>
+            <FlexLayout Direction="Row" Wrap="Wrap" JustifyContent="SpaceEvenly" AlignItems="Start">
+                <Border BackgroundColor="White" Stroke="#E9D5FF" StrokeShape="RoundRectangle 20" Padding="12" Margin="0,0,8,12">
+                    <VerticalStackLayout Spacing="10">
+                        <Label x:Name="PlayerALabel" FontSize="16" FontAttributes="Bold" TextColor="#3B0764" />
+                        <Label x:Name="ProgressALabel" FontSize="12" TextColor="#7C3AED" />
+                        <Grid x:Name="BoardAGrid" WidthRequest="324" HeightRequest="324" RowSpacing="1" ColumnSpacing="1" BackgroundColor="#7C3AED" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border BackgroundColor="White" Stroke="#E9D5FF" StrokeShape="RoundRectangle 20" Padding="12" Margin="0,0,8,12">
+                    <VerticalStackLayout Spacing="10">
+                        <Label x:Name="PlayerBLabel" FontSize="16" FontAttributes="Bold" TextColor="#3B0764" />
+                        <Label x:Name="ProgressBLabel" FontSize="12" TextColor="#7C3AED" />
+                        <Grid x:Name="BoardBGrid" WidthRequest="324" HeightRequest="324" RowSpacing="1" ColumnSpacing="1" BackgroundColor="#7C3AED" />
+                    </VerticalStackLayout>
+                </Border>
+            </FlexLayout>
+            <Label Text="Read-only: spectators cannot enter numbers, erase, hint, ready, or start a match."
+                   FontSize="12" TextColor="#64748B" HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

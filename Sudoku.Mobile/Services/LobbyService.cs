@@ -16,6 +16,9 @@ public sealed class LobbyService
         _preparedMatches = new();
 
     public event EventHandler<List<LobbyRoom>>? RoomsUpdated;
+    public event EventHandler<List<OnlinePlayerEntry>>? OnlinePlayersUpdated;
+    public event EventHandler<ChallengeDto>? ChallengeReceived;
+    public event EventHandler<ChallengeDto>? ChallengeUpdated;
 
     public LobbyService(TcpGameClient client)
     {
@@ -40,6 +43,39 @@ public sealed class LobbyService
             .Select(MapRoom)
             .ToList();
     }
+
+    public async Task<List<OnlinePlayerEntry>> GetOnlinePlayersAsync()
+    {
+        OnlinePlayerListResponse response = await _client.RequestAsync<EmptyPayload, OnlinePlayerListResponse>(
+            MessageType.ListOnlinePlayers, new EmptyPayload());
+        return response.Players
+            .Where(player => player.PlayerId != _client.PlayerId)
+            .Select(MapOnlinePlayer).ToList();
+    }
+
+    public async Task<List<ChallengeDto>> GetChallengesAsync()
+    {
+        ChallengeListResponse response = await _client.RequestAsync<EmptyPayload, ChallengeListResponse>(
+            MessageType.ListChallenges, new EmptyPayload());
+        return response.Challenges;
+    }
+
+    public Task<ChallengeDto> SendChallengeAsync(string targetPlayerId,
+        SudokuDifficultyLevel difficulty, MatchDurationMinutes duration) =>
+        _client.RequestAsync<SendChallengeRequest, ChallengeDto>(MessageType.SendChallenge,
+            new SendChallengeRequest { TargetPlayerId = targetPlayerId, Difficulty = difficulty, Duration = duration });
+
+    public Task<ChallengeDto> AcceptChallengeAsync(Guid challengeId) =>
+        _client.RequestAsync<ChallengeIdRequest, ChallengeDto>(MessageType.AcceptChallenge,
+            new ChallengeIdRequest { ChallengeId = challengeId });
+
+    public Task<ChallengeDto> DeclineChallengeAsync(Guid challengeId) =>
+        _client.RequestAsync<ChallengeIdRequest, ChallengeDto>(MessageType.DeclineChallenge,
+            new ChallengeIdRequest { ChallengeId = challengeId });
+
+    public Task<ChallengeDto> CancelChallengeAsync(Guid challengeId) =>
+        _client.RequestAsync<ChallengeIdRequest, ChallengeDto>(MessageType.CancelChallenge,
+            new ChallengeIdRequest { ChallengeId = challengeId });
 
     public async Task<LobbyRoom?> CreateRoomAsync(
         string playerId,
@@ -102,6 +138,8 @@ public sealed class LobbyService
         string playerName,
         CancellationToken cancellationToken = default)
     {
+        Guid? joinedRoomId = null;
+        bool completed = false;
         try
         {
             Console.WriteLine(
@@ -153,6 +191,7 @@ public sealed class LobbyService
 
             Guid roomId =
                 Guid.Parse(room.RoomId);
+            joinedRoomId = roomId;
 
             // Tạo waiter TRƯỚC khi chờ,
             // tránh trường hợp MatchPrepared đến quá sớm.
@@ -268,6 +307,7 @@ public sealed class LobbyService
                 ? room.Player2?.Username
                 : room.Player1?.Username;
 
+            completed = true;
             return startedMatch;
         }
         catch (OperationCanceledException)
@@ -283,6 +323,15 @@ public sealed class LobbyService
                 $"[QUICK MATCH ERROR] {ex}");
 
             return null;
+        }
+        finally
+        {
+            if (!completed && joinedRoomId.HasValue)
+            {
+                try { await LeaveRoomAsync(joinedRoomId.Value.ToString(), playerId); }
+                catch (Exception ex) { Console.WriteLine($"[QUICK MATCH CLEANUP] {ex.Message}"); }
+                _preparedMatches.TryRemove(joinedRoomId.Value, out _);
+            }
         }
     }
 
@@ -517,6 +566,27 @@ public sealed class LobbyService
                 return;
             }
 
+            if (message.Type == MessageType.OnlinePlayersUpdated)
+            {
+                OnlinePlayerListResponse response = message.ReadPayload<OnlinePlayerListResponse>();
+                OnlinePlayersUpdated?.Invoke(this, response.Players
+                    .Where(player => player.PlayerId != _client.PlayerId)
+                    .Select(MapOnlinePlayer).ToList());
+                return;
+            }
+
+            if (message.Type == MessageType.ChallengeReceived)
+            {
+                ChallengeReceived?.Invoke(this, message.ReadPayload<ChallengeDto>());
+                return;
+            }
+
+            if (message.Type == MessageType.ChallengeUpdated)
+            {
+                ChallengeUpdated?.Invoke(this, message.ReadPayload<ChallengeDto>());
+                return;
+            }
+
             if (message.Type ==
                 MessageType.MatchPrepared)
             {
@@ -593,7 +663,11 @@ public sealed class LobbyService
 
             HasActiveMatch =
                 room.HasActiveMatch,
-            Difficulty = room.Difficulty
+            Difficulty = room.Difficulty,
+            ActiveMatchId = room.ActiveMatchId,
+            MatchState = room.MatchState,
+            Duration = room.Duration,
+            IsChallengeRoom = room.IsChallengeRoom
         };
     }
 
@@ -611,4 +685,15 @@ public sealed class LobbyService
             IsOnline = true
         };
     }
+
+    private static OnlinePlayerEntry MapOnlinePlayer(OnlinePlayerDto player) => new()
+    {
+        PlayerId = player.PlayerId,
+        PlayerName = player.PlayerName,
+        State = player.State,
+        RoomName = player.RoomName,
+        MatchId = player.MatchId,
+        OpponentName = player.OpponentName,
+        Difficulty = player.Difficulty
+    };
 }

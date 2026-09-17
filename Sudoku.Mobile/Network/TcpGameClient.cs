@@ -34,17 +34,36 @@ public sealed class TcpGameClient : IAsyncDisposable
         await _connectionLock.WaitAsync();
         try
         {
-            if (IsConnected) return;
+            if (IsConnected && !String.IsNullOrWhiteSpace(_sessionToken))
+            {
+                if (_playerId == playerId) return;
+                throw new InvalidOperationException("A different player is already connected. Restart this client before switching accounts.");
+            }
             _intentionalDisconnect = false;
+            _sessionToken = null;
             _playerId = playerId;
             _playerName = playerName;
-            await OpenSocketAsync();
-            Message response = await SendRequestAsync(
-                MessageType.Handshake,
-                new HandshakeRequest { PlayerId = playerId, PlayerName = playerName });
-            HandshakeResponse handshake = response.ReadPayload<HandshakeResponse>();
-            _sessionToken = handshake.SessionToken;
-            _ = HeartbeatLoopAsync(_connectionCancellation!.Token);
+            try
+            {
+                await OpenSocketAsync();
+                Message response = await SendRequestAsync(
+                    MessageType.Handshake,
+                    new HandshakeRequest { PlayerId = playerId, PlayerName = playerName });
+                HandshakeResponse handshake = response.ReadPayload<HandshakeResponse>();
+                if (String.IsNullOrWhiteSpace(handshake.SessionToken) || handshake.PlayerId != playerId)
+                    throw new InvalidDataException("Game Server returned an invalid handshake.");
+                _sessionToken = handshake.SessionToken;
+                _ = HeartbeatLoopAsync(_connectionCancellation!.Token);
+            }
+            catch
+            {
+                _intentionalDisconnect = true;
+                _sessionToken = null;
+                CleanupSocket();
+                _playerId = null;
+                _playerName = null;
+                throw;
+            }
         }
         finally { _connectionLock.Release(); }
     }

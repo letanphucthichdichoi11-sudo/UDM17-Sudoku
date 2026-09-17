@@ -24,6 +24,18 @@ namespace Sudoku.Shared.Network
         SubmitMove,
         MoveResult,
         OpponentProgressUpdated,
-        MatchFinished
+        MatchFinished,
+        ListOnlinePlayers,
+        OnlinePlayersUpdated,
+        SendChallenge,
+        ChallengeReceived,
+        ListChallenges,
+        AcceptChallenge,
+        DeclineChallenge,
+        CancelChallenge,
+        ChallengeUpdated,
+        JoinSpectator,
+        LeaveSpectator,
+        SpectatorMatchUpdated
     }
 }

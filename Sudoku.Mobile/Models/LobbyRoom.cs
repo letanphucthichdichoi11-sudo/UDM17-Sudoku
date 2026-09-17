@@ -12,6 +12,10 @@ public class LobbyRoom
 
     public bool HasActiveMatch { get; set; }
     public Sudoku.Shared.Models.SudokuDifficultyLevel Difficulty { get; set; }
+    public Guid? ActiveMatchId { get; set; }
+    public Sudoku.Shared.Models.MatchLifecycleState? MatchState { get; set; }
+    public Sudoku.Shared.Models.MatchDurationMinutes? Duration { get; set; }
+    public bool IsChallengeRoom { get; set; }
 
     public int PlayerCount
     {
@@ -33,6 +37,11 @@ public class LobbyRoom
 
     public string PlayerStatus => $"{PlayerCount}/2 PLAYERS";
 
-    public string MatchStatus =>
-        HasActiveMatch ? "MATCH ACTIVE" : "WAITING";
+    public bool IsOngoing => MatchState == Sudoku.Shared.Models.MatchLifecycleState.Ongoing && ActiveMatchId.HasValue;
+    public bool IsWaiting => !HasActiveMatch && !IsFull;
+    public bool IsPreparing => !IsOngoing && !IsWaiting;
+    public string MatchStatus => IsOngoing ? "LIVE" : IsPreparing ? "PREPARING" : "WAITING";
+    public string Detail => IsOngoing
+        ? $"{Player1?.Username} vs {Player2?.Username} • {Difficulty} • ONGOING"
+        : $"{Difficulty} difficulty • {PlayerCount}/2 Players";
 }
