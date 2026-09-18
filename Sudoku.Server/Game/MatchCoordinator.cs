@@ -101,12 +101,6 @@ namespace Sudoku.Server.Game
                 SudokuDifficulty roomDifficulty = (SudokuDifficulty)room.Difficulty;
                 GeneratedSudoku sudoku =
                     _sudokuGenerator.GeneratePuzzle(roomDifficulty);
-                GeneratedSudoku sudokuB;
-                do
-                {
-                    sudokuB = _sudokuGenerator.GeneratePuzzle(roomDifficulty);
-                }
-                while (MatchGrid.Flatten(sudoku.Puzzle).SequenceEqual(MatchGrid.Flatten(sudokuB.Puzzle)));
 
                 return _matchManager.StartMatch(
                     parsedRoomId,
@@ -115,8 +109,8 @@ namespace Sudoku.Server.Game
                     room.Players[1].PlayerId,
                     sudoku.Puzzle,
                     sudoku.Solution,
-                    sudokuB.Puzzle,
-                    sudokuB.Solution,
+                    sudoku.Puzzle,
+                    sudoku.Solution,
                     duration);
             }
         }
