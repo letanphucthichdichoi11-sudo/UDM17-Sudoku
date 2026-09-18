@@ -1,4 +1,5 @@
-﻿namespace Sudoku.Mobile;
+﻿using Sudoku.Mobile.Views;
+namespace Sudoku.Mobile;
 
 public partial class AppShell : Shell
 {
@@ -15,5 +16,8 @@ public partial class AppShell : Shell
         Routing.RegisterRoute(nameof(CreateRoomPage), typeof(CreateRoomPage));
         Routing.RegisterRoute(nameof(RoomPreparationPage), typeof(RoomPreparationPage));
         Routing.RegisterRoute(nameof(SpectatorPage), typeof(SpectatorPage));
+
+        // Match History
+        Routing.RegisterRoute(nameof(HistoryPage), typeof(HistoryPage));
     }
 }
