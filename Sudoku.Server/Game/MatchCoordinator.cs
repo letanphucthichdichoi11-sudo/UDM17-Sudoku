@@ -98,15 +98,13 @@ namespace Sudoku.Server.Game
                         "The room already has an active match.");
                 }
 
-                SudokuDifficulty roomDifficulty = (SudokuDifficulty)room.Difficulty;
+                SudokuDifficulty roomDifficulty =
+                    (SudokuDifficulty)room.Difficulty;
+
+                // Generate ONE puzzle and ONE solution.
+                // Both players will use exactly the same puzzle.
                 GeneratedSudoku sudoku =
                     _sudokuGenerator.GeneratePuzzle(roomDifficulty);
-                GeneratedSudoku sudokuB;
-                do
-                {
-                    sudokuB = _sudokuGenerator.GeneratePuzzle(roomDifficulty);
-                }
-                while (MatchGrid.Flatten(sudoku.Puzzle).SequenceEqual(MatchGrid.Flatten(sudokuB.Puzzle)));
 
                 return _matchManager.StartMatch(
                     parsedRoomId,
@@ -115,15 +113,17 @@ namespace Sudoku.Server.Game
                     room.Players[1].PlayerId,
                     sudoku.Puzzle,
                     sudoku.Solution,
-                    sudokuB.Puzzle,
-                    sudokuB.Solution,
+                    sudoku.Puzzle,
+                    sudoku.Solution,
                     duration);
             }
         }
 
         public Match StartMatch(StartMatchRequest request)
         {
-            if (request == null) throw new ArgumentNullException("request");
+            if (request == null)
+                throw new ArgumentNullException("request");
+
             return StartMatch(
                 request.RoomId,
                 (SudokuDifficulty)request.Difficulty,
@@ -132,18 +132,29 @@ namespace Sudoku.Server.Game
 
         private static MatchDurationMinutes ParseDuration(TimeSpan timeLimit)
         {
-            if (timeLimit == TimeSpan.FromMinutes(5)) return MatchDurationMinutes.Five;
-            if (timeLimit == TimeSpan.FromMinutes(10)) return MatchDurationMinutes.Ten;
-            if (timeLimit == TimeSpan.FromMinutes(15)) return MatchDurationMinutes.Fifteen;
-            throw new ArgumentOutOfRangeException("timeLimit", "Match duration must be 5, 10 or 15 minutes.");
+            if (timeLimit == TimeSpan.FromMinutes(5))
+                return MatchDurationMinutes.Five;
+
+            if (timeLimit == TimeSpan.FromMinutes(10))
+                return MatchDurationMinutes.Ten;
+
+            if (timeLimit == TimeSpan.FromMinutes(15))
+                return MatchDurationMinutes.Fifteen;
+
+            throw new ArgumentOutOfRangeException(
+                "timeLimit",
+                "Match duration must be 5, 10 or 15 minutes.");
         }
 
-        private static void ValidateDuration(MatchDurationMinutes duration)
+        private static void ValidateDuration(
+            MatchDurationMinutes duration)
         {
             if (duration != MatchDurationMinutes.Five &&
                 duration != MatchDurationMinutes.Ten &&
                 duration != MatchDurationMinutes.Fifteen)
+            {
                 throw new ArgumentOutOfRangeException("duration");
+            }
         }
     }
 }

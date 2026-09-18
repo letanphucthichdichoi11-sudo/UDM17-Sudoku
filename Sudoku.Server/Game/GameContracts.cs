@@ -11,7 +11,10 @@ namespace Sudoku.Server.Game
 
     internal sealed class SystemClock : IClock
     {
-        public DateTime UtcNow { get { return DateTime.UtcNow; } }
+        public DateTime UtcNow
+        {
+            get { return DateTime.UtcNow; }
+        }
     }
 
     internal interface ISudokuGenerator
@@ -50,10 +53,17 @@ namespace Sudoku.Server.Game
             int[,] solutionGridB,
             Sudoku.Shared.Models.MatchDurationMinutes duration);
 
-        bool MarkPlayerReady(Guid matchId, string playerId);
+        bool MarkPlayerReady(
+            Guid matchId,
+            string playerId);
 
-        MatchStatusResponse GetPlayerStatus(Guid matchId, string playerId);
+        MatchStatusResponse GetPlayerStatus(
+            Guid matchId,
+            string playerId);
 
-        IList<ActiveMatchSummary> GetActiveMatchSummaries(DateTime nowUtc);
+        IList<ActiveMatchSummary> GetActiveMatchSummaries(
+            DateTime nowUtc);
+
+        IList<Match> GetMatchHistory();
     }
 }

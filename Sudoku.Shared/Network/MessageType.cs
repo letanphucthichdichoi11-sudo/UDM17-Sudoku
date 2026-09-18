@@ -36,6 +36,8 @@ namespace Sudoku.Shared.Network
         ChallengeUpdated,
         JoinSpectator,
         LeaveSpectator,
-        SpectatorMatchUpdated
+        SpectatorMatchUpdated,
+        GetMatchHistory,
+        MatchHistoryUpdated
     }
 }

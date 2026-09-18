@@ -21,11 +21,20 @@
                         <Label Text="SUDOKU" FontSize="21" FontAttributes="Bold" TextColor="#3B0764" />
                         <Label Text="BATTLE ARENA" FontSize="11" FontAttributes="Bold" TextColor="#06B6D4" />
                     </VerticalStackLayout>
-                    <Border Grid.Column="2" WidthRequest="44" HeightRequest="44" BackgroundColor="White"
-                            Stroke="#E9D5FF" StrokeShape="RoundRectangle 15" VerticalOptions="Center">
-                        <Label Text="⚙" FontSize="21" TextColor="#94A3B8"
-                               HorizontalOptions="Center" VerticalOptions="Center" />
-                    </Border>
+                    <Button
+    Grid.Column="2"
+    Text="HISTORY"
+    Clicked="History_Clicked"
+    BackgroundColor="White"
+    TextColor="#7C3AED"
+    BorderColor="#E9D5FF"
+    BorderWidth="1"
+    CornerRadius="15"
+    HeightRequest="44"
+    WidthRequest="95"
+    FontSize="10"
+    FontAttributes="Bold"
+    VerticalOptions="Center" />
                 </Grid>
 
                 <VerticalStackLayout Spacing="3" Margin="0,5,0,0">

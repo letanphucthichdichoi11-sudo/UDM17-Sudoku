@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<ContentPage
+    x:Class="Sudoku.Mobile.Views.HistoryPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Match History"
+    BackgroundColor="#F5F5F5">
+
+    <Grid
+        Padding="20"
+        RowDefinitions="Auto,Auto,*"
+        RowSpacing="16">
+
+        <!-- Header -->
+        <VerticalStackLayout Grid.Row="0" Spacing="4">
+
+            <Label
+                Text="Match History"
+                FontSize="28"
+                FontAttributes="Bold"
+                TextColor="#111111" />
+
+            <Label
+                Text="Your previous Sudoku matches"
+                FontSize="14"
+                TextColor="#777777" />
+
+        </VerticalStackLayout>
+
+        <!-- Refresh -->
+        <Button
+            Grid.Row="1"
+            Text="Refresh"
+            HeightRequest="44"
+            CornerRadius="10"
+            Clicked="Refresh_Clicked" />
+
+        <!-- History list -->
+        <CollectionView
+            x:Name="HistoryCollection"
+            Grid.Row="2"
+            SelectionMode="None">
+
+            <CollectionView.EmptyView>
+                <VerticalStackLayout
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center"
+                    Spacing="8">
+
+                    <Label
+                        Text="No match history yet"
+                        FontSize="18"
+                        FontAttributes="Bold"
+                        HorizontalTextAlignment="Center"
+                        TextColor="#555555" />
+
+                    <Label
+                        Text="Play a match and your result will appear here."
+                        FontSize="14"
+                        HorizontalTextAlignment="Center"
+                        TextColor="#888888" />
+
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+
+                    <Border
+                        Margin="0,0,0,12"
+                        Padding="16"
+                        BackgroundColor="White"
+                        Stroke="#DDDDDD"
+                        StrokeThickness="1"
+                        StrokeShape="RoundRectangle 12">
+
+                        <VerticalStackLayout Spacing="10">
+
+                            <!-- Opponent + Result -->
+                            <Grid
+                                ColumnDefinitions="*,Auto"
+                                ColumnSpacing="10">
+
+                                <VerticalStackLayout
+                                    Grid.Column="0"
+                                    Spacing="2">
+
+                                    <Label
+                                        Text="{Binding OpponentName}"
+                                        FontSize="18"
+                                        FontAttributes="Bold"
+                                        TextColor="#111111" />
+
+                                    <Label
+                                        Text="{Binding MatchId}"
+                                        FontSize="11"
+                                        TextColor="#999999" />
+
+                                </VerticalStackLayout>
+
+                                <Label
+                                    Grid.Column="1"
+                                    Text="{Binding WinnerPlayerId}"
+                                    FontSize="13"
+                                    FontAttributes="Bold"
+                                    VerticalOptions="Center"
+                                    TextColor="#333333" />
+
+                            </Grid>
+
+                            <BoxView
+                                HeightRequest="1"
+                                BackgroundColor="#EEEEEE" />
+
+                            <!-- Score -->
+                            <Grid
+                                ColumnDefinitions="*,Auto,*"
+                                ColumnSpacing="8">
+
+                                <VerticalStackLayout
+                                    Grid.Column="0"
+                                    HorizontalOptions="Center">
+
+                                    <Label
+                                        Text="YOU"
+                                        FontSize="11"
+                                        FontAttributes="Bold"
+                                        HorizontalTextAlignment="Center"
+                                        TextColor="#777777" />
+
+                                    <Label
+                                        Text="{Binding OwnCorrectCount}"
+                                        FontSize="24"
+                                        FontAttributes="Bold"
+                                        HorizontalTextAlignment="Center"
+                                        TextColor="#111111" />
+
+                                    <Label
+                                        Text="correct"
+                                        FontSize="11"
+                                        HorizontalTextAlignment="Center"
+                                        TextColor="#888888" />
+
+                                </VerticalStackLayout>
+
+                                <Label
+                                    Grid.Column="1"
+                                    Text="VS"
+                                    FontSize="14"
+                                    FontAttributes="Bold"
+                                    VerticalOptions="Center"
+                                    HorizontalOptions="Center"
+                                    TextColor="#999999" />
+
+                                <VerticalStackLayout
+                                    Grid.Column="2"
+                                    HorizontalOptions="Center">
+
+                                    <Label
+                                        Text="OPPONENT"
+                                        FontSize="11"
+                                        FontAttributes="Bold"
+                                        HorizontalTextAlignment="Center"
+                                        TextColor="#777777" />
+
+                                    <Label
+                                        Text="{Binding OpponentCorrectCount}"
+                                        FontSize="24"
+                                        FontAttributes="Bold"
+                                        HorizontalTextAlignment="Center"
+                                        TextColor="#111111" />
+
+                                    <Label
+                                        Text="correct"
+                                        FontSize="11"
+                                        HorizontalTextAlignment="Center"
+                                        TextColor="#888888" />
+
+                                </VerticalStackLayout>
+
+                            </Grid>
+
+                            <!-- Errors -->
+                            <Grid
+                                ColumnDefinitions="*,*"
+                                ColumnSpacing="10">
+
+                                <Label
+                                    Grid.Column="0"
+                                    Text="{Binding OwnErrorCount, StringFormat='Your errors: {0}'}"
+                                    FontSize="13"
+                                    TextColor="#777777" />
+
+                                <Label
+                                    Grid.Column="1"
+                                    Text="{Binding OpponentErrorCount, StringFormat='Opponent errors: {0}'}"
+                                    FontSize="13"
+                                    HorizontalTextAlignment="End"
+                                    TextColor="#777777" />
+
+                            </Grid>
+
+                            <!-- Date + duration -->
+                            <Grid
+                                ColumnDefinitions="*,Auto"
+                                ColumnSpacing="10">
+
+                                <Label
+                                    Grid.Column="0"
+                                    Text="{Binding FinishedAtUtc, StringFormat='Finished: {0:dd/MM/yyyy HH:mm}'}"
+                                    FontSize="12"
+                                    TextColor="#999999" />
+
+                                <Label
+                                    Grid.Column="1"
+                                    Text="{Binding Duration}"
+                                    FontSize="12"
+                                    TextColor="#999999"
+                                    HorizontalTextAlignment="End" />
+
+                            </Grid>
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
+
+    </Grid>
+
+</ContentPage>
