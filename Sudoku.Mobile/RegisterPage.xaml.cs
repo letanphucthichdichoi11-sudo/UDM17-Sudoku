@@ -72,7 +72,6 @@ public partial class RegisterPage : ContentPage
             return;
         }
 
-        // Hiển thị một vòng xoay loading ở đây nếu bạn muốn giao diện mượt hơn
 
         // 2. Gói dữ liệu để gửi xuống Backend
         var request = new RegisterRequest
@@ -113,7 +112,7 @@ public partial class RegisterPage : ContentPage
             return;
         }
 
-        // 2. Gom dữ liệu gửi đi (Lấy lại chính Email mà người dùng vừa nhập ở form trước)
+        // 2. Gom dữ liệu gửi đi 
         var verifyData = new VerifyOtpRequest
         {
             Email = EmailEntry.Text,
@@ -129,7 +128,6 @@ public partial class RegisterPage : ContentPage
         {
             await DisplayAlertAsync("Thành công", "Xác thực tài khoản thành công!", "Tuyệt vời");
 
-            // Đóng trang hiện tại, lùi về trang Login
             await Shell.Current.GoToAsync("..");
         }
         else
@@ -144,7 +142,6 @@ public partial class RegisterPage : ContentPage
     {
         var entry = sender as Entry;
 
-        // Nếu ô vừa gõ có chứa 1 con số, lập tức Focus sang ô kế tiếp
         if (!string.IsNullOrEmpty(e.NewTextValue))
         {
             if (entry == Otp1) Otp2.Focus();
@@ -155,7 +152,6 @@ public partial class RegisterPage : ContentPage
         }
     }
 
-    // 2. Khi con trỏ trỏ vào ô nào -> Viền ô đó chuyển màu Tím
     private void OnOtpFocused(object sender, FocusEventArgs e)
     {
         var entry = sender as Entry;
@@ -164,7 +160,6 @@ public partial class RegisterPage : ContentPage
         border.StrokeThickness = 3; // Viền dày lên
     }
 
-    // 3. Khi con trỏ rời đi -> Viền trả về Xanh lợt
     private void OnOtpUnfocused(object sender, FocusEventArgs e)
     {
         var entry = sender as Entry;
