@@ -1,10 +1,19 @@
-﻿namespace Sudoku.Mobile
+﻿namespace Sudoku.Mobile;
+
+public partial class AppShell : Shell
 {
-    public partial class AppShell : Shell
+    public AppShell()
     {
-        public AppShell()
-        {
-            InitializeComponent();
-        }
+        InitializeComponent();
+
+        // Đăng ký Route điều hướng
+        Routing.RegisterRoute("RegisterPage", typeof(RegisterPage));
+        Routing.RegisterRoute("ForgotPasswordPage", typeof(ForgotPasswordPage));
+        Routing.RegisterRoute(nameof(SudokuPage), typeof(SudokuPage));
+        Routing.RegisterRoute(nameof(VictoryResultPage), typeof(VictoryResultPage));
+        Routing.RegisterRoute(nameof(DefeatResultPage), typeof(DefeatResultPage));
+        Routing.RegisterRoute(nameof(CreateRoomPage), typeof(CreateRoomPage));
+        Routing.RegisterRoute(nameof(RoomPreparationPage), typeof(RoomPreparationPage));
+        Routing.RegisterRoute(nameof(SpectatorPage), typeof(SpectatorPage));
     }
 }

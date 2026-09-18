@@ -5,24 +5,26 @@ using Sudoku.Shared.Models;
 
 namespace Sudoku.Server.Game
 {
-    internal class RoomManager
+    internal sealed class RoomManager : IRoomManager
     {
-        private readonly ConcurrentDictionary<string, Room> _rooms;
+        private readonly ConcurrentDictionary<Guid, Room> _rooms;
 
         public RoomManager()
         {
-            _rooms = new ConcurrentDictionary<string, Room>();
+            _rooms = new ConcurrentDictionary<Guid, Room>();
         }
 
         public Room CreateRoom(
             string roomName,
-            Player owner)
+            Player owner,
+            SudokuDifficultyLevel difficulty = SudokuDifficultyLevel.Medium)
         {
-            string roomId = Guid.NewGuid().ToString();
+            Guid roomId = Guid.NewGuid();
 
             Room room = new Room(
                 roomId,
-                roomName
+                roomName,
+                difficulty: difficulty
             );
 
             room.Players.Add(owner);
@@ -38,10 +40,12 @@ namespace Sudoku.Server.Game
         }
 
         public bool JoinRoom(
-            string roomId,
+            Guid roomId,
             Player player)
         {
-            if (!_rooms.TryGetValue(roomId, out Room room))
+            if (!_rooms.TryGetValue(
+                roomId,
+                out Room room))
             {
                 return false;
             }
@@ -70,7 +74,7 @@ namespace Sudoku.Server.Game
         }
 
         public bool LeaveRoom(
-            string roomId,
+            Guid roomId,
             string playerId)
         {
             if (!_rooms.TryGetValue(
@@ -114,7 +118,7 @@ namespace Sudoku.Server.Game
             return true;
         }
 
-        public Room GetRoom(string roomId)
+        public Room GetRoom(Guid roomId)
         {
             _rooms.TryGetValue(
                 roomId,
@@ -131,7 +135,7 @@ namespace Sudoku.Server.Game
             );
         }
 
-        public bool RemoveRoom(string roomId)
+        public bool RemoveRoom(Guid roomId)
         {
             return _rooms.TryRemove(
                 roomId,

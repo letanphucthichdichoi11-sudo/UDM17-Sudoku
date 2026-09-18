@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using Sudoku.Shared.Models;
 
 namespace Sudoku.Server.Game
 {
-    internal enum MatchState { Ongoing, Finished, Aborted, Archived }
+    internal enum MatchState { Preparing, Ongoing, Finished, Aborted, Archived }
     internal enum ConnectionStatus { Connected, Disconnected }
-    internal enum MatchFinishReason { Completed, TimeUp, TechnicalWinDisconnect, BothDisconnected, ServerRestart }
-    internal enum MoveErrorCode { None, MatchNotFound, MatchNotOngoing, NotAPlayer, DuplicateMoveNotFound, OutOfRange, GivenCellLocked, InvalidValue, IncorrectValue }
+    internal enum MatchFinishReason { Completed, TimeUp, TechnicalWinDisconnect, BothDisconnected, ServerRestart, PreparingTimeout }
+    internal enum MoveErrorCode { None, MatchNotFound, MatchNotOngoing, MatchExpired, NotAPlayer, DuplicateMoveNotFound, OutOfRange, GivenCellLocked, InvalidValue, IncorrectValue, UnresolvedMistake }
 
     internal sealed class PlayerBoardState
     {
@@ -15,6 +16,9 @@ namespace Sudoku.Server.Game
         public int CorrectCount { get; set; }
         public int ErrorCount { get; set; }
         public int TotalEmptyCells { get; private set; }
+        public bool HasUnresolvedMistake { get; set; }
+        public int UnresolvedMistakeRow { get; set; } = -1;
+        public int UnresolvedMistakeColumn { get; set; } = -1;
 
         public PlayerBoardState(int[,] puzzle)
         {
@@ -37,10 +41,17 @@ namespace Sudoku.Server.Game
         public string PlayerBId { get; set; }
         public int[,] OriginalPuzzle { get; set; }
         public int[,] SolutionGrid { get; set; }
+        public int[,] OriginalPuzzleB { get; set; }
+        public int[,] SolutionGridB { get; set; }
         public PlayerBoardState BoardA { get; set; }
         public PlayerBoardState BoardB { get; set; }
         public TimeSpan TimeLimit { get; set; }
-        public DateTime ServerStartTimestamp { get; set; }
+        public MatchDurationMinutes Duration { get; set; }
+        public DateTime PreparingEndsAtUtc { get; set; }
+        public DateTime? StartedAtUtc { get; set; }
+        public DateTime? EndsAtUtc { get; set; }
+        public bool PlayerAReady { get; set; }
+        public bool PlayerBReady { get; set; }
         public MatchState State { get; set; }
         public ConnectionStatus ConnectionA { get; set; }
         public ConnectionStatus ConnectionB { get; set; }
@@ -50,6 +61,7 @@ namespace Sudoku.Server.Game
         public HashSet<string> SpectatorIds { get; private set; }
         public Dictionary<string, MoveResult> ProcessedMoves { get; private set; }
         public object SyncRoot { get; private set; }
+        public long SpectatorVersion { get; set; }
 
         public Match()
         {
@@ -60,6 +72,8 @@ namespace Sudoku.Server.Game
 
         public bool IsPlayer(string playerId) { return playerId == PlayerAId || playerId == PlayerBId; }
         public PlayerBoardState GetBoard(string playerId) { return playerId == PlayerAId ? BoardA : BoardB; }
+        public int[,] GetPuzzle(string playerId) { return playerId == PlayerAId ? OriginalPuzzle : OriginalPuzzleB; }
+        public int[,] GetSolution(PlayerBoardState board) { return ReferenceEquals(board, BoardA) ? SolutionGrid : SolutionGridB; }
         public string GetOpponent(string playerId) { return playerId == PlayerAId ? PlayerBId : PlayerAId; }
     }
 
@@ -88,17 +102,32 @@ namespace Sudoku.Server.Game
         public Guid MatchId { get; set; }
         public int[,] OriginalPuzzle { get; set; }
         public int[,] OwnBoard { get; set; }
+        public int[,] OpponentBoard { get; set; }
         public int OwnCorrectCount { get; set; }
         public int OwnErrorCount { get; set; }
         public int OpponentCorrectCount { get; set; }
         public int OpponentErrorCount { get; set; }
+        public bool OwnHasUnresolvedMistake { get; set; }
+        public int OwnUnresolvedMistakeRow { get; set; }
+        public int OwnUnresolvedMistakeColumn { get; set; }
+        public bool OpponentHasUnresolvedMistake { get; set; }
+        public int OpponentUnresolvedMistakeRow { get; set; }
+        public int OpponentUnresolvedMistakeColumn { get; set; }
         public TimeSpan TimeLeft { get; set; }
+        public DateTime ServerUtcNow { get; set; }
+        public DateTime? StartedAtUtc { get; set; }
+        public DateTime? EndsAtUtc { get; set; }
+        public MatchState State { get; set; }
     }
 
     internal sealed class SpectatorMatchSnapshot
     {
         public Guid MatchId { get; set; }
+        public Guid RoomId { get; set; }
+        public string PlayerAId { get; set; }
+        public string PlayerBId { get; set; }
         public int[,] OriginalPuzzle { get; set; }
+        public int[,] OriginalPuzzleB { get; set; }
         public int[,] BoardA { get; set; }
         public int[,] BoardB { get; set; }
         public int CorrectCountA { get; set; }
@@ -106,6 +135,12 @@ namespace Sudoku.Server.Game
         public int ErrorCountA { get; set; }
         public int ErrorCountB { get; set; }
         public TimeSpan TimeLeft { get; set; }
+        public DateTime ServerUtcNow { get; set; }
+        public DateTime? StartedAtUtc { get; set; }
+        public DateTime? EndsAtUtc { get; set; }
+        public MatchDurationMinutes Duration { get; set; }
+        public MatchState State { get; set; }
+        public long Version { get; set; }
     }
 
     internal sealed class ActiveMatchSummary
@@ -120,6 +155,8 @@ namespace Sudoku.Server.Game
         public int ErrorCountB { get; set; }
         public int SpectatorCount { get; set; }
         public TimeSpan TimeLeft { get; set; }
+        public DateTime ServerUtcNow { get; set; }
+        public DateTime? EndsAtUtc { get; set; }
     }
 
     internal class MatchEventArgs : EventArgs
@@ -142,6 +179,15 @@ namespace Sudoku.Server.Game
             var copy = new int[9, 9];
             Array.Copy(grid, copy, grid.Length);
             return copy;
+        }
+
+        public static int[] Flatten(int[,] grid)
+        {
+            var values = new int[81];
+            for (int row = 0; row < 9; row++)
+            for (int column = 0; column < 9; column++)
+                values[row * 9 + column] = grid[row, column];
+            return values;
         }
     }
 }

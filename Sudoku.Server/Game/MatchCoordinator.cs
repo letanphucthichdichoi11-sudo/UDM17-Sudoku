@@ -6,15 +6,25 @@ namespace Sudoku.Server.Game
 {
     internal sealed class MatchCoordinator
     {
-        private readonly SudokuGenerator _sudokuGenerator;
-        private readonly RoomManager _roomManager;
-        private readonly MatchManager _matchManager;
+        private readonly ISudokuGenerator _sudokuGenerator;
+        private readonly IRoomManager _roomManager;
+        private readonly IMatchManager _matchManager;
+        private readonly IClock _clock;
         private readonly object _startLock = new object();
 
         public MatchCoordinator(
-            SudokuGenerator sudokuGenerator,
-            RoomManager roomManager,
-            MatchManager matchManager)
+            ISudokuGenerator sudokuGenerator,
+            IRoomManager roomManager,
+            IMatchManager matchManager)
+            : this(sudokuGenerator, roomManager, matchManager, new SystemClock())
+        {
+        }
+
+        public MatchCoordinator(
+            ISudokuGenerator sudokuGenerator,
+            IRoomManager roomManager,
+            IMatchManager matchManager,
+            IClock clock)
         {
             _sudokuGenerator = sudokuGenerator ??
                 throw new ArgumentNullException("sudokuGenerator");
@@ -22,6 +32,7 @@ namespace Sudoku.Server.Game
                 throw new ArgumentNullException("roomManager");
             _matchManager = matchManager ??
                 throw new ArgumentNullException("matchManager");
+            _clock = clock ?? throw new ArgumentNullException("clock");
         }
 
         public Match StartMatch(
@@ -29,11 +40,19 @@ namespace Sudoku.Server.Game
             SudokuDifficulty difficulty,
             TimeSpan timeLimit)
         {
+            MatchDurationMinutes duration = ParseDuration(timeLimit);
+            return StartMatch(roomId, difficulty, duration);
+        }
+
+        public Match StartMatch(
+            string roomId,
+            SudokuDifficulty difficulty,
+            MatchDurationMinutes duration)
+        {
             if (String.IsNullOrWhiteSpace(roomId))
                 throw new ArgumentException("Room id is required.", "roomId");
 
-            if (timeLimit <= TimeSpan.Zero)
-                throw new ArgumentOutOfRangeException("timeLimit");
+            ValidateDuration(duration);
 
             Guid parsedRoomId;
             if (!Guid.TryParse(roomId, out parsedRoomId))
@@ -45,7 +64,7 @@ namespace Sudoku.Server.Game
 
             lock (_startLock)
             {
-                Room room = _roomManager.GetRoom(roomId);
+                Room room = _roomManager.GetRoom(parsedRoomId);
                 if (room == null)
                     throw new InvalidOperationException("Room was not found.");
 
@@ -70,7 +89,7 @@ namespace Sudoku.Server.Game
                 }
 
                 bool hasActiveMatch = _matchManager
-                    .GetActiveMatchSummaries(DateTime.UtcNow)
+                    .GetActiveMatchSummaries(_clock.UtcNow)
                     .Any(match => match.RoomId == parsedRoomId);
 
                 if (hasActiveMatch)
@@ -79,8 +98,15 @@ namespace Sudoku.Server.Game
                         "The room already has an active match.");
                 }
 
+                SudokuDifficulty roomDifficulty = (SudokuDifficulty)room.Difficulty;
                 GeneratedSudoku sudoku =
-                    _sudokuGenerator.GeneratePuzzle(difficulty);
+                    _sudokuGenerator.GeneratePuzzle(roomDifficulty);
+                GeneratedSudoku sudokuB;
+                do
+                {
+                    sudokuB = _sudokuGenerator.GeneratePuzzle(roomDifficulty);
+                }
+                while (MatchGrid.Flatten(sudoku.Puzzle).SequenceEqual(MatchGrid.Flatten(sudokuB.Puzzle)));
 
                 return _matchManager.StartMatch(
                     parsedRoomId,
@@ -89,8 +115,35 @@ namespace Sudoku.Server.Game
                     room.Players[1].PlayerId,
                     sudoku.Puzzle,
                     sudoku.Solution,
-                    timeLimit);
+                    sudokuB.Puzzle,
+                    sudokuB.Solution,
+                    duration);
             }
+        }
+
+        public Match StartMatch(StartMatchRequest request)
+        {
+            if (request == null) throw new ArgumentNullException("request");
+            return StartMatch(
+                request.RoomId,
+                (SudokuDifficulty)request.Difficulty,
+                request.Duration);
+        }
+
+        private static MatchDurationMinutes ParseDuration(TimeSpan timeLimit)
+        {
+            if (timeLimit == TimeSpan.FromMinutes(5)) return MatchDurationMinutes.Five;
+            if (timeLimit == TimeSpan.FromMinutes(10)) return MatchDurationMinutes.Ten;
+            if (timeLimit == TimeSpan.FromMinutes(15)) return MatchDurationMinutes.Fifteen;
+            throw new ArgumentOutOfRangeException("timeLimit", "Match duration must be 5, 10 or 15 minutes.");
+        }
+
+        private static void ValidateDuration(MatchDurationMinutes duration)
+        {
+            if (duration != MatchDurationMinutes.Five &&
+                duration != MatchDurationMinutes.Ten &&
+                duration != MatchDurationMinutes.Fifteen)
+                throw new ArgumentOutOfRangeException("duration");
         }
     }
 }

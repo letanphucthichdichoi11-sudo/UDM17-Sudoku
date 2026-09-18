@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Sudoku.Mobile.Views.LobbyPage"
+             Title="Lobby" Shell.NavBarIsVisible="False"
+             BackgroundColor="#F4EFFF" SizeChanged="OnLobbySizeChanged">
+    <Grid>
+        <Image Source="bg_blob.png" HorizontalOptions="Start" VerticalOptions="Start"
+               Margin="-60,-40,0,0" WidthRequest="320" Opacity="0.35" InputTransparent="True" />
+        <Image Source="bg_blob22.png" HorizontalOptions="End" VerticalOptions="End"
+               Margin="0,0,-50,-50" WidthRequest="350" Opacity="0.30" InputTransparent="True" />
+
+        <ScrollView>
+            <VerticalStackLayout Padding="24,30,24,32" Spacing="20" MaximumWidthRequest="1100">
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <Border WidthRequest="52" HeightRequest="52" BackgroundColor="#FDE68A"
+                            Stroke="#FBBF24" StrokeShape="RoundRectangle 16">
+                        <Image Source="mascot_badge.png" WidthRequest="45" HeightRequest="45" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="0">
+                        <Label Text="SUDOKU" FontSize="21" FontAttributes="Bold" TextColor="#3B0764" />
+                        <Label Text="BATTLE ARENA" FontSize="11" FontAttributes="Bold" TextColor="#06B6D4" />
+                    </VerticalStackLayout>
+                    <Border Grid.Column="2" WidthRequest="44" HeightRequest="44" BackgroundColor="White"
+                            Stroke="#E9D5FF" StrokeShape="RoundRectangle 15" VerticalOptions="Center">
+                        <Label Text="⚙" FontSize="21" TextColor="#94A3B8"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                </Grid>
+
+                <VerticalStackLayout Spacing="3" Margin="0,5,0,0">
+                    <Label Text="Ready to play?" FontSize="30" FontAttributes="Bold" TextColor="#3B0764" />
+                    <Label Text="Challenge another player and solve it faster!" FontSize="14" TextColor="#7C3AED" />
+                </VerticalStackLayout>
+
+                <ActivityIndicator IsRunning="{Binding IsLoading}" IsVisible="{Binding IsLoading}"
+                                   Color="#7C3AED" HorizontalOptions="Center" />
+                <Border IsVisible="{Binding HasLoadError}" BackgroundColor="#FEF2F2"
+                        Stroke="#FECACA" StrokeShape="RoundRectangle 14" Padding="12">
+                    <Label Text="{Binding LoadError}" TextColor="#B91C1C" FontSize="12" />
+                </Border>
+
+                <Border BackgroundColor="#7C3AED" StrokeThickness="0" StrokeShape="RoundRectangle 27" Padding="20">
+                    <Border.Shadow><Shadow Brush="#7C3AED" Opacity="0.22" Offset="0,8" Radius="16" /></Border.Shadow>
+                    <VerticalStackLayout Spacing="15">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                            <Border BackgroundColor="#8B5CF6" WidthRequest="52" HeightRequest="52"
+                                    StrokeThickness="0" StrokeShape="RoundRectangle 16">
+                                <Label Text="⚡" FontSize="29" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                <Label Text="QUICK MATCH" FontSize="18" FontAttributes="Bold" TextColor="White" />
+                                <Label Text="Find an opponent instantly" FontSize="12" TextColor="#E9D5FF" />
+                            </VerticalStackLayout>
+                        </Grid>
+                        <Button x:Name="QuickMatchButton" Text="FIND OPPONENT  →" Clicked="OnQuickMatchClicked"
+                                HeightRequest="50" CornerRadius="24" BackgroundColor="White" TextColor="#6D28D9"
+                                FontAttributes="Bold" FontSize="14" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Grid x:Name="ActionCardsGrid" ColumnDefinitions="*,*" ColumnSpacing="16" RowSpacing="14">
+                    <Border x:Name="CreateCard" Grid.Column="0" BackgroundColor="White" Stroke="#E9D5FF"
+                            StrokeShape="RoundRectangle 23" Padding="17">
+                        <VerticalStackLayout Spacing="7">
+                            <Label Text="＋" FontSize="30" TextColor="#7C3AED" HorizontalOptions="Center" />
+                            <Label Text="Create Room" FontSize="15" FontAttributes="Bold" TextColor="#3B0764" HorizontalOptions="Center" />
+                            <Label Text="Play with a friend" FontSize="11" TextColor="#64748B" HorizontalOptions="Center" />
+                            <Button Text="CREATE" Clicked="CreateRoom_Clicked" HeightRequest="42" CornerRadius="20"
+                                    BackgroundColor="#F5F0FE" TextColor="#7C3AED" FontAttributes="Bold" FontSize="12" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border x:Name="JoinCard" Grid.Column="1" BackgroundColor="White" Stroke="#CFFAFE"
+                            StrokeShape="RoundRectangle 23" Padding="17">
+                        <VerticalStackLayout Spacing="7">
+                            <Label Text="↗" FontSize="30" TextColor="#06B6D4" HorizontalOptions="Center" />
+                            <Label Text="Join Room" FontSize="15" FontAttributes="Bold" TextColor="#3B0764" HorizontalOptions="Center" />
+                            <Label Text="Enter a room code" FontSize="11" TextColor="#64748B" HorizontalOptions="Center" />
+                            <Button Text="JOIN" Clicked="JoinRoomCode_Clicked" HeightRequest="42" CornerRadius="20"
+                                    BackgroundColor="#ECFEFF" TextColor="#0891B2" FontAttributes="Bold" FontSize="12" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <Border BackgroundColor="White" Stroke="#E9D5FF" StrokeShape="RoundRectangle 23" Padding="18">
+                    <VerticalStackLayout Spacing="13">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Text="AVAILABLE ROOMS" FontSize="13" FontAttributes="Bold" TextColor="#3B0764" />
+                            <Label Grid.Column="1" Text="● ONLINE" FontSize="10" FontAttributes="Bold" TextColor="#059669" />
+                        </Grid>
+                        <BoxView HeightRequest="1" Color="#F3E8FF" />
+                        <Label Text="No rooms available. Create a room or try Quick Match!"
+                               IsVisible="{Binding HasNoRooms}" HorizontalOptions="Center" TextColor="#94A3B8" FontSize="12" />
+                        <VerticalStackLayout Spacing="9" BindableLayout.ItemsSource="{Binding Rooms}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="#FAF7FF" Stroke="#E9D5FF" StrokeShape="RoundRectangle 16" Padding="12">
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                                            <VerticalStackLayout Spacing="3" VerticalOptions="Center">
+                                                <HorizontalStackLayout Spacing="8">
+                                                    <Label Text="{Binding RoomName}" FontSize="14" FontAttributes="Bold" TextColor="#3B0764"
+                                                           LineBreakMode="TailTruncation" MaximumWidthRequest="300" />
+                                                    <Border BackgroundColor="#DCFCE7" StrokeThickness="0" StrokeShape="RoundRectangle 10" Padding="6,2">
+                                                        <Label Text="{Binding MatchStatus}" FontSize="10" FontAttributes="Bold" TextColor="#047857" />
+                                                    </Border>
+                                                </HorizontalStackLayout>
+                                                <Label Text="{Binding Detail}" FontSize="11" TextColor="#64748B" LineBreakMode="TailTruncation" />
+                                            </VerticalStackLayout>
+                                            <HorizontalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
+                                                <Button Text="JOIN" CommandParameter="{Binding .}" Clicked="JoinRoom_Clicked"
+                                                        IsVisible="{Binding IsWaiting}" BackgroundColor="#7C3AED" TextColor="White"
+                                                        CornerRadius="17" WidthRequest="82" HeightRequest="38" FontAttributes="Bold" FontSize="11" />
+                                                <Button Text="WATCH" CommandParameter="{Binding .}" Clicked="WatchRoom_Clicked"
+                                                        IsVisible="{Binding IsOngoing}" BackgroundColor="#06B6D4" TextColor="White"
+                                                        CornerRadius="17" WidthRequest="87" HeightRequest="38" FontAttributes="Bold" FontSize="11" />
+                                                <Label Text="UNAVAILABLE" IsVisible="{Binding IsPreparing}" FontSize="10" TextColor="#94A3B8" />
+                                            </HorizontalStackLayout>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border BackgroundColor="White" Stroke="#E9D5FF" StrokeShape="RoundRectangle 23" Padding="18">
+                    <VerticalStackLayout Spacing="13">
+                        <Grid ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="10">
+                            <Label Text="ONLINE PLAYERS" FontSize="13" FontAttributes="Bold" TextColor="#3B0764" VerticalOptions="Center" />
+                            <Button Grid.Column="1" Text="{Binding ChallengeBadge}" Clicked="ToggleChallenges_Clicked"
+                                    BackgroundColor="#F3E8FF" TextColor="#6D28D9" CornerRadius="17" HeightRequest="32"
+                                    FontAttributes="Bold" FontSize="10" Padding="10,0" />
+                            <Label Grid.Column="3" Text="{Binding OnlineCount}" FontSize="10" FontAttributes="Bold"
+                                   TextColor="#0891B2" VerticalOptions="Center" />
+                        </Grid>
+                        <BoxView HeightRequest="1" Color="#F3E8FF" />
+                        <Border IsVisible="{Binding ChallengesExpanded}" BackgroundColor="#FAF5FF"
+                                Stroke="#E9D5FF" StrokeShape="RoundRectangle 17" Padding="12">
+                            <VerticalStackLayout Spacing="9">
+                                <Label Text="PENDING CHALLENGES" FontSize="11" FontAttributes="Bold" TextColor="#3B0764" />
+                                <VerticalStackLayout Spacing="8" BindableLayout.ItemsSource="{Binding PendingChallenges}">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BackgroundColor="White" Stroke="#E9D5FF" StrokeShape="RoundRectangle 13" Padding="10">
+                                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                                    <VerticalStackLayout Spacing="2">
+                                                        <Label Text="{Binding ChallengerName}" FontSize="13" FontAttributes="Bold" TextColor="#3B0764" LineBreakMode="TailTruncation" />
+                                                        <Label Text="CHALLENGED YOU" FontSize="9" FontAttributes="Bold" TextColor="#7C3AED" />
+                                                        <Label Text="{Binding Detail}" FontSize="11" TextColor="#64748B" />
+                                                    </VerticalStackLayout>
+                                                    <HorizontalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
+                                                        <Button Text="DECLINE" CommandParameter="{Binding .}" Clicked="DeclineChallenge_Clicked"
+                                                                BackgroundColor="#F1F5F9" TextColor="#475569" CornerRadius="16" HeightRequest="36" FontSize="10" />
+                                                        <Button Text="ACCEPT" CommandParameter="{Binding .}" Clicked="AcceptChallenge_Clicked"
+                                                                BackgroundColor="#7C3AED" TextColor="White" CornerRadius="16" HeightRequest="36" FontSize="10" />
+                                                    </HorizontalStackLayout>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+                        <Label Text="No other players are online." IsVisible="{Binding HasNoOnlinePlayers}"
+                               HorizontalOptions="Center" TextColor="#94A3B8" FontSize="12" />
+                        <VerticalStackLayout Spacing="9" BindableLayout.ItemsSource="{Binding OnlinePlayers}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BackgroundColor="#FAF7FF" Stroke="#E9D5FF" StrokeShape="RoundRectangle 16" Padding="12">
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                            <VerticalStackLayout Spacing="3" VerticalOptions="Center">
+                                                <HorizontalStackLayout Spacing="8">
+                                                    <Label Text="{Binding PlayerName}" FontSize="14" FontAttributes="Bold" TextColor="#3B0764"
+                                                           LineBreakMode="TailTruncation" MaximumWidthRequest="260" />
+                                                    <Label Text="{Binding Status}" FontSize="10" FontAttributes="Bold" TextColor="#059669" />
+                                                </HorizontalStackLayout>
+                                                <Label Text="{Binding Detail}" FontSize="11" TextColor="#64748B" LineBreakMode="TailTruncation" />
+                                            </VerticalStackLayout>
+                                            <HorizontalStackLayout Grid.Column="1" VerticalOptions="Center">
+                                                <Button Text="CHALLENGE" IsVisible="{Binding CanChallenge}" CommandParameter="{Binding .}"
+                                                        Clicked="ChallengePlayer_Clicked" BackgroundColor="#7C3AED" TextColor="White"
+                                                        CornerRadius="18" HeightRequest="39" FontAttributes="Bold" FontSize="10" />
+                                                <Button Text="WATCH" IsVisible="{Binding CanWatch}" CommandParameter="{Binding .}"
+                                                        Clicked="WatchPlayer_Clicked" BackgroundColor="#06B6D4" TextColor="White"
+                                                        CornerRadius="18" HeightRequest="39" FontAttributes="Bold" FontSize="10" />
+                                                <Label Text="UNAVAILABLE" IsVisible="{Binding IsInRoom}" FontSize="10" TextColor="#94A3B8" />
+                                            </HorizontalStackLayout>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border BackgroundColor="#F8F2FF" Stroke="#E9D5FF" StrokeShape="RoundRectangle 18" Padding="17">
+                    <VerticalStackLayout Spacing="9">
+                        <Label Text="HOW TO PLAY" FontSize="12" FontAttributes="Bold" TextColor="#3B0764" />
+                        <Label Text="1  Join or create a 1v1 room" FontSize="12" TextColor="#64748B" />
+                        <Label Text="2  Both players solve the same Sudoku puzzle" FontSize="12" TextColor="#64748B" />
+                        <Label Text="3  First to complete the puzzle wins the duel!" FontSize="12" TextColor="#64748B" />
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Border IsVisible="{Binding HasIncomingToast}" HorizontalOptions="End" VerticalOptions="Start"
+                Margin="12" MaximumWidthRequest="340" BackgroundColor="White" Stroke="#DDD6FE"
+                StrokeShape="RoundRectangle 18" Padding="14" ZIndex="2">
+            <Border.Shadow><Shadow Brush="#6D28D9" Opacity="0.2" Offset="0,6" Radius="14" /></Border.Shadow>
+            <VerticalStackLayout Spacing="9">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Text="CHALLENGE REQUEST" FontSize="10" FontAttributes="Bold" TextColor="#7C3AED" />
+                    <Button Grid.Column="1" Text="×" Clicked="DismissToast_Clicked" BackgroundColor="Transparent"
+                            TextColor="#64748B" FontSize="18" WidthRequest="32" HeightRequest="30" Padding="0" />
+                </Grid>
+                <Label Text="{Binding IncomingDetail}" FontSize="13" TextColor="#3B0764" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <Button Text="DECLINE" Clicked="DeclineToast_Clicked" BackgroundColor="#F1F5F9" TextColor="#475569"
+                            CornerRadius="17" HeightRequest="38" FontSize="11" />
+                    <Button Grid.Column="1" Text="ACCEPT" Clicked="AcceptToast_Clicked" BackgroundColor="#7C3AED"
+                            TextColor="White" CornerRadius="17" HeightRequest="38" FontSize="11" />
+                </Grid>
+            </VerticalStackLayout>
+        </Border>
+
+        <Grid x:Name="ChallengeModal" IsVisible="False" BackgroundColor="#990F172A" ZIndex="3">
+            <Border BackgroundColor="White" Stroke="#E9D5FF" StrokeShape="RoundRectangle 23" Padding="20"
+                    MaximumWidthRequest="430" HorizontalOptions="Center" VerticalOptions="Center" Margin="14">
+                <VerticalStackLayout Spacing="16">
+                    <Label x:Name="ChallengeTitle" Text="CHALLENGE PLAYER" FontSize="17" FontAttributes="Bold" TextColor="#3B0764" />
+                    <Label Text="Configure match settings for a 1v1 battle" FontSize="12" TextColor="#64748B" />
+                    <Label Text="CHOOSE DIFFICULTY" FontSize="11" FontAttributes="Bold" TextColor="#334155" />
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="7">
+                        <Button x:Name="EasyButton" Text="EASY" CommandParameter="Easy" Clicked="Difficulty_Clicked" BackgroundColor="#F5F0FE" TextColor="#6D28D9" CornerRadius="12" FontSize="11" />
+                        <Button x:Name="MediumButton" Grid.Column="1" Text="MEDIUM" CommandParameter="Medium" Clicked="Difficulty_Clicked" BackgroundColor="#7C3AED" TextColor="White" CornerRadius="12" FontSize="11" />
+                        <Button x:Name="HardButton" Grid.Column="2" Text="HARD" CommandParameter="Hard" Clicked="Difficulty_Clicked" BackgroundColor="#F5F0FE" TextColor="#6D28D9" CornerRadius="12" FontSize="11" />
+                    </Grid>
+                    <Label Text="TIME LIMIT" FontSize="11" FontAttributes="Bold" TextColor="#334155" />
+                    <Grid ColumnDefinitions="*,*,*" ColumnSpacing="7">
+                        <Button x:Name="FiveButton" Text="5 MIN" CommandParameter="Five" Clicked="Duration_Clicked" BackgroundColor="#7C3AED" TextColor="White" CornerRadius="12" FontSize="11" />
+                        <Button x:Name="TenButton" Grid.Column="1" Text="10 MIN" CommandParameter="Ten" Clicked="Duration_Clicked" BackgroundColor="#F5F0FE" TextColor="#6D28D9" CornerRadius="12" FontSize="11" />
+                        <Button x:Name="FifteenButton" Grid.Column="2" Text="15 MIN" CommandParameter="Fifteen" Clicked="Duration_Clicked" BackgroundColor="#F5F0FE" TextColor="#6D28D9" CornerRadius="12" FontSize="11" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,7,0,0">
+                        <Button Text="CANCEL" Clicked="CancelChallengeModal_Clicked" BackgroundColor="#F5F0FE" TextColor="#64748B" CornerRadius="18" HeightRequest="43" FontSize="11" />
+                        <Button x:Name="SendChallengeButton" Grid.Column="1" Text="SEND CHALLENGE" Clicked="SendChallenge_Clicked" BackgroundColor="#7C3AED" TextColor="White" CornerRadius="18" HeightRequest="43" FontSize="11" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <Grid IsVisible="{Binding HasSentChallenge}" BackgroundColor="#990F172A" ZIndex="3">
+            <Border BackgroundColor="White" Stroke="#E9D5FF" StrokeShape="RoundRectangle 23" Padding="22"
+                    MaximumWidthRequest="420" HorizontalOptions="Center" VerticalOptions="Center" Margin="14">
+                <VerticalStackLayout Spacing="15" HorizontalOptions="Center">
+                    <Label Text="CHALLENGE SENT" FontSize="18" FontAttributes="Bold" TextColor="#3B0764" HorizontalOptions="Center" />
+                    <Label Text="{Binding SentDetail}" FontSize="13" TextColor="#64748B" HorizontalTextAlignment="Center" />
+                    <Button Text="CANCEL CHALLENGE" Clicked="CancelSent_Clicked" BackgroundColor="#F5F0FE" TextColor="#6D28D9"
+                            CornerRadius="18" HeightRequest="43" FontSize="11" FontAttributes="Bold" />
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </Grid>
+</ContentPage>

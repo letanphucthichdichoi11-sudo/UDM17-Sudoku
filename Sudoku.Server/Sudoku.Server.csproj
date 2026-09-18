@@ -35,6 +35,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -53,12 +54,19 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Game\RoomManager.cs" />
+    <Compile Include="Game\ChallengeManager.cs" />
+    <Compile Include="Game\GameContracts.cs" />
+    <Compile Include="Game\GameApplicationServices.cs" />
     <Compile Include="Game\MatchCoordinator.cs" />
     <Compile Include="Game\MatchModels.cs" />
+    <Compile Include="Game\MatchTimerService.cs" />
     <Compile Include="Game\MatchRepository.cs" />
     <Compile Include="Game\SudokuGenerator.cs" />
+    <Compile Include="Game\SudokuGridValidator.cs" />
     <Compile Include="Game\MatchManager.cs" />
     <Compile Include="Network\ClientHandler.cs" />
+    <Compile Include="Network\MessageDispatcher.cs" />
+    <Compile Include="Network\SessionManager.cs" />
     <Compile Include="Network\Server.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
