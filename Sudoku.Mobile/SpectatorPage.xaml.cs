@@ -44,27 +44,56 @@ public partial class SpectatorPage : ContentPage
 
     private static void BuildBoard(Grid grid, Label[,] cells)
     {
-        for (int i = 0; i < 9; i++)
+        grid.Children.Clear();
+        for (int boxRow = 0; boxRow < 3; boxRow++)
         {
-            grid.RowDefinitions.Add(new RowDefinition(GridLength.Star));
-            grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-        }
-        for (int row = 0; row < 9; row++)
-        for (int col = 0; col < 9; col++)
-        {
-            var label = new Label
+            for (int boxColumn = 0; boxColumn < 3; boxColumn++)
             {
-                BackgroundColor = (row / 3 + col / 3) % 2 == 0 ? Colors.White : Color.FromArgb("#F5F0FE"),
-                TextColor = Color.FromArgb("#3B0764"),
-                FontSize = 15,
-                FontAttributes = FontAttributes.Bold,
-                HorizontalTextAlignment = TextAlignment.Center,
-                VerticalTextAlignment = TextAlignment.Center
-            };
-            cells[row, col] = label;
-            grid.Add(label, col, row);
+                var box = new Grid
+                {
+                    BackgroundColor = Color.FromArgb("#7C3AED"),
+                    RowSpacing = 0,
+                    ColumnSpacing = 0
+                };
+
+                for (int index = 0; index < 3; index++)
+                {
+                    box.RowDefinitions.Add(new RowDefinition(GridLength.Star));
+                    box.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+                }
+
+                for (int innerRow = 0; innerRow < 3; innerRow++)
+                    for (int innerColumn = 0; innerColumn < 3; innerColumn++)
+                    {
+                        int row = boxRow * 3 + innerRow;
+                        int column = boxColumn * 3 + innerColumn;
+                        var label = new Label
+                        {
+                            BackgroundColor = Colors.White,
+                            TextColor = Color.FromArgb("#1F2937"),
+                            FontSize = 16,
+                            FontAttributes = FontAttributes.Bold,
+                            HorizontalTextAlignment = TextAlignment.Center,
+                            VerticalTextAlignment = TextAlignment.Center
+                        };
+                        var cellBorder = new Border
+                        {
+                            Padding = 0,
+                            Margin = 0,
+                            Stroke = Color.FromArgb("#C4B5FD"),
+                            StrokeThickness = 0.75,
+                            BackgroundColor = Colors.White,
+                            Content = label
+                        };
+                        cells[row, column] = label;
+                        box.Add(cellBorder, innerColumn, innerRow);
+                    }
+
+                grid.Add(box, boxColumn, boxRow);
+            }
         }
     }
+
 
     private void Apply(SpectatorMatchState state)
     {
