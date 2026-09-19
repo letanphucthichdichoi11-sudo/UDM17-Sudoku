@@ -25,14 +25,35 @@
                     <VerticalStackLayout Spacing="10">
                         <Label x:Name="PlayerALabel" FontSize="16" FontAttributes="Bold" TextColor="#3B0764" />
                         <Label x:Name="ProgressALabel" FontSize="12" TextColor="#7C3AED" />
-                        <Grid x:Name="BoardAGrid" WidthRequest="324" HeightRequest="324" RowSpacing="1" ColumnSpacing="1" BackgroundColor="#7C3AED" />
+                        <Border WidthRequest="324" HeightRequest="324"
+                                Stroke="#7C3AED" StrokeThickness="3"
+                                StrokeShape="RoundRectangle 20" BackgroundColor="White"
+                                Padding="5" HorizontalOptions="Center">
+                            <Border.Shadow>
+                                <Shadow Brush="#6D28D9" Opacity="0.15" Offset="0,7" Radius="0" />
+                            </Border.Shadow>
+                            <Grid x:Name="BoardAGrid" RowSpacing="3" ColumnSpacing="3"
+                                  RowDefinitions="*,*,*" ColumnDefinitions="*,*,*"
+                                  BackgroundColor="#7C3AED" />
+                        </Border>
                     </VerticalStackLayout>
                 </Border>
                 <Border BackgroundColor="White" Stroke="#E9D5FF" StrokeShape="RoundRectangle 20" Padding="12" Margin="0,0,8,12">
                     <VerticalStackLayout Spacing="10">
                         <Label x:Name="PlayerBLabel" FontSize="16" FontAttributes="Bold" TextColor="#3B0764" />
                         <Label x:Name="ProgressBLabel" FontSize="12" TextColor="#7C3AED" />
-                        <Grid x:Name="BoardBGrid" WidthRequest="324" HeightRequest="324" RowSpacing="1" ColumnSpacing="1" BackgroundColor="#7C3AED" />
+                        <Border WidthRequest="324" HeightRequest="324"
+                                Stroke="#7C3AED" StrokeThickness="3"
+                                StrokeShape="RoundRectangle 20" BackgroundColor="White"
+                                Padding="5" HorizontalOptions="Center">
+                            <Border.Shadow>
+                                <Shadow Brush="#6D28D9" Opacity="0.15" Offset="0,7" Radius="0" />
+                            </Border.Shadow>
+                            <Grid x:Name="BoardBGrid" RowSpacing="3" ColumnSpacing="3"
+                                  RowDefinitions="*,*,*" ColumnDefinitions="*,*,*"
+                                  BackgroundColor="#7C3AED" />
+                        </Border>
+
                     </VerticalStackLayout>
                 </Border>
             </FlexLayout>
