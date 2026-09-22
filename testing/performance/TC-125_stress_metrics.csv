@@ -1,0 +1,3 @@
+"Label","ConcurrentClients","ConcurrentMatches","Requests","DurationSeconds","AvgLatencyMs","MaxLatencyMs","ThroughputMsgPerSec","Errors","ErrorRate","ServerCpuPercentApprox","ServerRamStartMB","ServerRamEndMB"
+"stress","16","8","16000","22.303","1.39","27.041","717.395","0","0","27.291","26.91","37.63"
+,,,,,,,,,,,,

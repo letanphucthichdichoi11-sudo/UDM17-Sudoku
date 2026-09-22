@@ -1,0 +1,18 @@
+param([int]$Clients=4,[int]$RequestsPerClient=10,[string]$Label='level1',[switch]$RecoveryCheck)
+$ErrorActionPreference='Stop'; $HostName='127.0.0.1'; $Port=5000
+function Env([int]$t,$p){$id=[guid]::NewGuid();$i=$p|ConvertTo-Json -Compress -Depth 10;$j=[ordered]@{ProtocolVersion=1;MessageId=$id;Type=$t;Payload=$i}|ConvertTo-Json -Compress -Depth 10;[pscustomobject]@{Id=$id;Json=$j}}
+function Exact($s,[int]$n){$b=[byte[]]::new($n);$o=0;while($o-lt$n){$r=$s.Read($b,$o,$n-$o);if(!$r){throw'EOF'};$o+=$r};$b}
+function ReadM($c){$s=$c.GetStream();$h=Exact $s 4;$n=([int]$h[0]-shl24)-bor([int]$h[1]-shl16)-bor([int]$h[2]-shl8)-bor[int]$h[3];$m=([Text.Encoding]::UTF8.GetString((Exact $s $n))|ConvertFrom-Json);$p=$null;if($m.Payload){$p=$m.Payload|ConvertFrom-Json};[pscustomobject]@{E=$m;P=$p}}
+function Req($c,[int]$t,$p){$e=Env $t $p;$b=[Text.Encoding]::UTF8.GetBytes($e.Json);$h=[byte[]]@([byte](($b.Length-shr24)-band255),[byte](($b.Length-shr16)-band255),[byte](($b.Length-shr8)-band255),[byte]($b.Length-band255));$s=$c.GetStream();$s.Write($h,0,4);$s.Write($b,0,$b.Length);$s.Flush();while($true){$m=ReadM $c;if($m.E.CorrelationId-eq$e.Id){return $m}}}
+function Client{$c=[Net.Sockets.TcpClient]::new();$c.ReceiveTimeout=15000;$c.Connect($HostName,$Port);$c}
+$serverPid=(Get-NetTCPConnection -State Listen -LocalPort 5000).OwningProcess;$sp=Get-Process -Id $serverPid;$cpu0=$sp.TotalProcessorTime.TotalMilliseconds;$ram0=$sp.WorkingSet64;$start=[DateTime]::UtcNow;$cs=@();$errors=0;$lat=[Collections.Generic.List[double]]::new();$tag=[guid]::NewGuid().ToString('N').Substring(0,6)
+try{
+ for($i=0;$i-lt$Clients;$i++){try{$c=Client;$null=Req $c 0 @{PlayerId="load-$Label-$tag-$i";PlayerName="Load $i"};$cs+=$c}catch{$errors++}}
+ $matches=0
+ for($i=0;$i+1-lt$cs.Count;$i+=2){try{$room=(Req $cs[$i] 9 @{RoomName="Load $Label $i";Difficulty=0}).P;$null=Req $cs[$i+1] 10 @{RoomId=$room.RoomId};$st=(Req $cs[$i] 13 @{RoomId=[string]$room.RoomId;Difficulty=0;Duration=5}).P;$null=ReadM $cs[$i+1];$null=Req $cs[$i] 15 @{MatchId=$st.MatchId};$null=Req $cs[$i+1] 15 @{MatchId=$st.MatchId};$matches++}catch{$errors++}}
+ $sent=0;$sw=[Diagnostics.Stopwatch]::StartNew()
+ for($r=0;$r-lt$RequestsPerClient;$r++){foreach($c in $cs){try{$q=[Diagnostics.Stopwatch]::StartNew();$null=Req $c 2 @{};$q.Stop();$lat.Add($q.Elapsed.TotalMilliseconds);$sent++}catch{$errors++}}}
+ $sw.Stop();$sp.Refresh();$elapsed=([DateTime]::UtcNow-$start).TotalSeconds;$cpu=($sp.TotalProcessorTime.TotalMilliseconds-$cpu0)/($elapsed* [Environment]::ProcessorCount);$avg=if($lat.Count){($lat|Measure-Object -Average).Average}else{0};$max=if($lat.Count){($lat|Measure-Object -Maximum).Maximum}else{0};$through=if($sw.Elapsed.TotalSeconds){$sent/$sw.Elapsed.TotalSeconds}else{0}
+ [pscustomobject]@{Label=$Label;ConcurrentClients=$cs.Count;ConcurrentMatches=$matches;Requests=$sent;DurationSeconds=[math]::Round($sw.Elapsed.TotalSeconds,3);AvgLatencyMs=[math]::Round($avg,3);MaxLatencyMs=[math]::Round($max,3);ThroughputMsgPerSec=[math]::Round($through,3);Errors=$errors;ErrorRate=if($sent+$errors){[math]::Round($errors/($sent+$errors)*100,3)}else{0};ServerCpuPercentApprox=[math]::Round($cpu,3);ServerRamStartMB=[math]::Round($ram0/1MB,2);ServerRamEndMB=[math]::Round($sp.WorkingSet64/1MB,2)}
+}finally{foreach($c in $cs){try{$c.Close()}catch{}}}
+if($RecoveryCheck){Start-Sleep -Milliseconds 500;$ok=$false;$detail='';try{$x=Client;$h=Req $x 0 @{PlayerId="recovery-$tag";PlayerName='Recovery'};$cr=Req $x 9 @{RoomName="Recovery $tag";Difficulty=0};$ok=($cr.E.Type-eq9);$detail=if($cr.E.Error){$cr.E.Error.Message}else{'CreateRoom response received'};$x.Close()}catch{$detail=$_.Exception.Message};[pscustomobject]@{RecoveryConnectAndHandshake=$true;RecoveryCreateRoom=$ok;Detail=$detail}}
