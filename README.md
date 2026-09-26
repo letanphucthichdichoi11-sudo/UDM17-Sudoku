@@ -11,12 +11,16 @@ UDM_17 là hệ thống chơi Sudoku đối kháng giữa hai người chơi. Ng
 
 Game Server tạo đề Sudoku, quản lý trạng thái trận đấu, xác thực nước đi, đồng bộ tiến độ, xử lý thời gian, kết nối lại, spectator và kết quả thắng/thua. Ứng dụng cũng hiển thị lịch sử trận được lưu trong thời gian Game Server đang hoạt động.
 
-## 2. Danh sách thành viên
+## 2. Danh sách thành viên nhóm UDM_17 Game Sudoku đối kháng
 
-| STT | Họ và tên | MSSV | Vai trò |
-|---:|---|---|---|
-| 1 | Bổ sung sau | Bổ sung sau | Bổ sung sau |
-| 2 | Bổ sung sau | Bổ sung sau | Bổ sung sau |
+| STT | Họ và tên | Vai trò |
+|---:|---|---|
+| 1 | Lê Tấn Phúc | Nhóm trưởng - BE |
+| 2 | Ngô Ngọc Phương Nghi | BE - Tester |
+| 3 | Huỳnh Nhật Phương | BE |
+| 4 | Nguyễn Minh Tuấn | FE |
+| 5 | Trương Tuấn Việt | FE |
+| 6 | Phạm Phú Anh Duy | FE |
 
 ## 3. Kiến trúc hệ thống
 
