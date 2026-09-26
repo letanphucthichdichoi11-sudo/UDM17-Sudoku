@@ -1,45 +1,136 @@
-# UDM17 Sudoku
+# UDM_17 — Game Sudoku đối kháng
 
-UDM17 Sudoku là ứng dụng Sudoku đối kháng 1v1. Người chơi đăng nhập qua HTTP API, vào Lobby, tạo hoặc tham gia phòng và chơi qua TCP Game Server. Server quản lý phòng, đề Sudoku, nước đi, thời gian và kết quả trận đấu.
+## 1. Thông tin đề tài
 
-## Trạng thái hiện tại
+| Thông tin | Nội dung |
+|---|---|
+| Mã đề tài | `UDM_17` |
+| Tên đề tài | `Game Sudoku đối kháng` |
 
-- Login hoạt động đầy đủ từ `LoginPage` tới `LobbyPage`.
-- Create Room hỗ trợ `Easy`, `Medium`, `Hard`.
-- Mỗi trận có hai đề Sudoku khác nhau nhưng cùng độ khó.
-- Mỗi bảng là Sudoku `9 × 9`, gồm 81 ô và chín vùng `3 × 3`.
-- Bảng của bản thân cho phép nhập/xóa ở ô không phải đề bài; bảng đối thủ chỉ đọc.
-- Server xác thực nước đi, đồng bộ tiến độ và quyết định người thắng.
-- Có màn hình Victory/Defeat, lưu kết quả và quay lại Lobby.
-- Bộ kiểm thử hiện tại: **60/60 test PASS**.
+UDM_17 là hệ thống chơi Sudoku đối kháng giữa hai người chơi. Người dùng có thể đăng ký, xác thực tài khoản, đăng nhập, vào Lobby, tạo hoặc tham gia phòng, tìm đối thủ nhanh và gửi lời thách đấu trực tiếp.
 
-## Thành phần dự án
+Game Server tạo đề Sudoku, quản lý trạng thái trận đấu, xác thực nước đi, đồng bộ tiến độ, xử lý thời gian, kết nối lại, spectator và kết quả thắng/thua. Ứng dụng cũng hiển thị lịch sử trận được lưu trong thời gian Game Server đang hoạt động.
 
-| Project | Chức năng | Framework |
-|---|---|---|
-| `Sudoku.Api` | Đăng ký, đăng nhập, JWT và tài khoản | ASP.NET Core, .NET 10 |
-| `Sudoku.Mobile` | Giao diện client | .NET MAUI, .NET 10 |
-| `Sudoku.Server` | TCP server, phòng và trận đấu | Windows Forms, .NET Framework 4.7.2 |
-| `Sudoku.Shared` | Model và giao thức dùng chung | .NET Framework 4.7.2 |
-| `Sudoku.Server.Tests` | Automated tests | MSTest, .NET Framework 4.7.2 |
+## 2. Danh sách thành viên nhóm UDM_17 Game Sudoku đối kháng
 
-```text
-Login → Lobby → Create Room / Quick Match → Sudoku Duel → Victory / Defeat
+| STT | Họ và tên | Vai trò |
+|---:|---|---|
+| 1 | Lê Tấn Phúc | Nhóm trưởng - BE |
+| 2 | Ngô Ngọc Phương Nghi | BE - Tester |
+| 3 | Huỳnh Nhật Phương | BE |
+| 4 | Nguyễn Minh Tuấn | FE |
+| 5 | Trương Tuấn Việt | FE |
+| 6 | Phạm Phú Anh Duy | FE |
+
+## 3. Kiến trúc hệ thống
+
+Hệ thống sử dụng mô hình Client–Server. Authentication API cung cấp chức năng tài khoản qua HTTP; Game Server quản lý Lobby, phòng và trận đấu qua TCP; ứng dụng .NET MAUI giao tiếp với cả hai dịch vụ.
+
+```mermaid
+flowchart LR
+    Client["Sudoku.Mobile<br/>.NET MAUI Client"]
+    subgraph Backend
+        API["Sudoku.Api<br/>ASP.NET Core HTTP API"]
+        Server["Sudoku.Server<br/>TCP Game Server"]
+    end
+    DB[("SQL Server / LocalDB")]
+    Shared["Sudoku.Shared<br/>Model và giao thức dùng chung"]
+    Tests["Sudoku.Server.Tests<br/>MSTest"]
+    Client -->|"HTTP: tài khoản, OTP, JWT"| API
+    API -->|"Entity Framework Core"| DB
+    Client <-->|"TCP: Lobby, phòng, trận đấu"| Server
+    Client -. sử dụng .-> Shared
+    Server -. sử dụng .-> Shared
+    Tests -. kiểm thử .-> Server
 ```
 
-| Dịch vụ | Địa chỉ mặc định |
+| Thành phần | Trách nhiệm |
+|---|---|
+| `Sudoku.Mobile` | Client .NET MAUI: đăng nhập, đăng ký, quên mật khẩu, Lobby, phòng, trận đấu, spectator, lịch sử và kết quả. |
+| `Sudoku.Api` | ASP.NET Core API: đăng ký, OTP, đăng nhập, JWT, phiên đăng nhập và đặt lại mật khẩu. |
+| `Sudoku.Server` | Windows Forms TCP server: kết nối, phiên chơi, phòng, challenge, trận đấu, thời gian, nước đi, spectator và lịch sử. |
+| `Sudoku.Server/Network` | Giao thức TCP, đóng gói message, handshake, heartbeat, reconnect và điều phối request. |
+| `Sudoku.Server/Game` | Tạo phòng, challenge, sinh Sudoku, xác thực nước đi và quản lý vòng đời trận đấu. |
+| `Sudoku.Shared` | Model, contract và kiểu message dùng chung giữa client và Game Server. |
+| `Sudoku.Server.Tests` | Automated test MSTest cho game logic, giao thức, thời gian và xử lý lỗi. |
+| `testing` | Script kiểm thử API, TCP, load, stress, soak và kết quả performance. |
+
+Địa chỉ mặc định:
+
+| Dịch vụ | Địa chỉ |
 |---|---|
 | Authentication API | `http://127.0.0.1:5243` |
-| TCP Game Server | `127.0.0.1:5000` |
+| TCP Game Server | `0.0.0.0:5000` |
 
-## Yêu cầu môi trường
+TCP Client có handshake, session token, heartbeat, request/response theo correlation ID, nhận sự kiện server và tự động thử kết nối lại.
 
-- Windows 10 hoặc Windows 11.
-- Git, .NET SDK 10 và Visual Studio 2022/Build Tools tương thích.
+## 4. Cấu trúc thư mục
+
+```text
+UDM17-Sudoku/
+├── Sudoku.Api/
+│   ├── Controllers/
+│   ├── Data/
+│   ├── DTO/
+│   ├── Migrations/
+│   ├── Models/
+│   └── Services/
+├── Sudoku.Mobile/
+│   ├── Models/
+│   ├── Network/
+│   ├── Platforms/
+│   ├── Resources/
+│   ├── Services/
+│   ├── ViewModels/
+│   └── Views/
+├── Sudoku.Server/
+│   ├── Game/
+│   ├── Network/
+│   ├── Form1.cs
+│   └── Program.cs
+├── Sudoku.Shared/
+│   ├── Models/
+│   ├── Network/
+│   └── Utils/
+├── Sudoku.Server.Tests/
+├── testing/
+│   └── performance/
+├── testcase.md
+├── UDM17-Sudoku.slnx
+└── README.md
+```
+
+- `Sudoku.Api`: API xác thực và dữ liệu tài khoản.
+- `Sudoku.Mobile`: giao diện và logic client.
+- `Sudoku.Server`: TCP server và nghiệp vụ game.
+- `Sudoku.Shared`: model và giao thức dùng chung.
+- `Sudoku.Server.Tests`: automated test.
+- `testing`: script và dữ liệu kiểm thử tích hợp/performance.
+
+Các thư mục sinh tự động như `bin`, `obj`, `.vs` và `TestResults` không thuộc source code chính.
+
+## 5. Yêu cầu môi trường
+
+- Windows 10 hoặc Windows 11 để chạy đầy đủ hệ thống.
+- .NET SDK 10.
+- Visual Studio hỗ trợ solution `.slnx`.
 - Workload `.NET Multi-platform App UI development`.
+- Workload `.NET desktop development`.
 - .NET Framework 4.7.2 Developer Pack.
-- SQL Server LocalDB, hoặc SQL Server được cấu hình trong `Sudoku.Api/appsettings.json`.
-- Android SDK và emulator nếu chạy Android.
+- SQL Server LocalDB hoặc SQL Server tương thích.
+- Git.
+
+Windows client yêu cầu tối thiểu Windows `10.0.17763.0`; target framework là `net10.0-windows10.0.19041.0`.
+
+| Project | Framework |
+|---|---|
+| `Sudoku.Api` | `net10.0` |
+| `Sudoku.Mobile` | `net10.0-android`, `net10.0-ios`, `net10.0-maccatalyst`, `net10.0-windows10.0.19041.0` |
+| `Sudoku.Server` | .NET Framework 4.7.2 |
+| `Sudoku.Shared` | .NET Framework 4.7.2 |
+| `Sudoku.Server.Tests` | `net472` |
+
+Package chính của API: ASP.NET Core OpenAPI `10.0.11`, Entity Framework Core SQL Server/Tools `9.0.0`, JWT Bearer `9.0.0` và BCrypt.Net-Next `4.0.3`. Test project sử dụng Microsoft.NET.Test.Sdk `17.12.0` và MSTest `3.6.4`.
 
 Kiểm tra môi trường:
 
@@ -48,61 +139,100 @@ dotnet --info
 dotnet workload list
 ```
 
-Nếu chưa có MAUI workload:
+Nếu thiếu MAUI:
 
 ```powershell
 dotnet workload install maui
 ```
 
-## Clone và restore
+## 6. Cấu hình hệ thống
+
+### Authentication API
+
+Các file cấu hình:
+
+```text
+Sudoku.Api/appsettings.json
+Sudoku.Api/appsettings.Development.json
+Sudoku.Api/Properties/launchSettings.json
+```
+
+| Cấu hình | Ý nghĩa |
+|---|---|
+| `ConnectionStrings:DefaultConnection` | Kết nối SQL Server cho tài khoản, OTP và phiên đăng nhập. |
+| `EmailSettings:SmtpServer/SmtpPort` | SMTP server và port gửi OTP. |
+| `EmailSettings:SenderName/SenderEmail/SenderPassword` | Danh tính và thông tin xác thực người gửi. |
+| `JwtSettings:SecretKey/Issuer/Audience` | Cấu hình tạo và xác thực JWT. |
+
+Không commit password, token hoặc secret. Nên dùng User Secrets hoặc biến môi trường:
+
+```powershell
+$env:ConnectionStrings__DefaultConnection = "<chuỗi-kết-nối-SQL-Server>"
+$env:EmailSettings__SenderEmail = "<email-gửi-OTP>"
+$env:EmailSettings__SenderPassword = "<mật-khẩu-ứng-dụng>"
+$env:JwtSettings__SecretKey = "<khóa-bí-mật-đủ-dài>"
+```
+
+API tự áp dụng Entity Framework migration khi khởi động. Profile HTTP mặc định là `http://localhost:5243`.
+
+### Mobile Client
+
+| Biến | Windows | Android Emulator | Ý nghĩa |
+|---|---|---|---|
+| `SUDOKU_API_URL` | `http://127.0.0.1:5243/` | `http://10.0.2.2:5243/` | URL Authentication API. |
+| `SUDOKU_GAME_HOST` | `127.0.0.1` | `10.0.2.2` | Host TCP Game Server. |
+| `SUDOKU_GAME_PORT` | `5000` | `5000` | Port TCP Game Server. |
+
+Ví dụ backend tại `192.168.1.10`:
+
+```powershell
+$env:SUDOKU_API_URL = "http://192.168.1.10:5243/"
+$env:SUDOKU_GAME_HOST = "192.168.1.10"
+$env:SUDOKU_GAME_PORT = "5000"
+```
+
+Firewall phải cho phép các cổng sử dụng. Game Server hiện đặt cố định port `5000` trong `Sudoku.Server/Form1.cs`. Phòng và lịch sử trận được lưu in-memory, không tồn tại sau khi Game Server tắt.
+
+## 7. Hướng dẫn cài đặt
 
 ```powershell
 git clone https://github.com/letanphucthichdichoi11-sudo/UDM17-Sudoku.git
-Set-Location .\UDM17-Sudoku
+cd UDM17-Sudoku
 dotnet restore .\UDM17-Sudoku.slnx
 ```
 
-Các lệnh dưới đây được chạy từ thư mục chứa `UDM17-Sudoku.slnx`.
-
-## Build
+Nếu project .NET Framework không restore bằng `dotnet`, mở **Developer PowerShell for Visual Studio**:
 
 ```powershell
-# Authentication API
-dotnet build .\Sudoku.Api\Sudoku.Api.csproj --no-restore
-
-# TCP Game Server
-dotnet build .\Sudoku.Server\Sudoku.Server.csproj --no-restore
-
-# Windows client
-dotnet build .\Sudoku.Mobile\Sudoku.Mobile.csproj `
-    -f net10.0-windows10.0.19041.0 `
-    --no-restore
-
-# Android client
-dotnet build .\Sudoku.Mobile\Sudoku.Mobile.csproj `
-    -f net10.0-android `
-    --no-restore
+msbuild .\UDM17-Sudoku.slnx /restore
 ```
 
-Build Release:
+Cấu hình database, SMTP và JWT bằng biến môi trường hoặc cấu hình development cục bộ trước khi chạy.
+
+Build API:
 
 ```powershell
-dotnet build .\Sudoku.Api\Sudoku.Api.csproj -c Release
-dotnet build .\Sudoku.Server\Sudoku.Server.csproj -c Release
-dotnet build .\Sudoku.Mobile\Sudoku.Mobile.csproj `
-    -f net10.0-windows10.0.19041.0 `
-    -c Release
+dotnet build .\Sudoku.Api\Sudoku.Api.csproj
 ```
 
-Nếu Mobile báo `Sudoku.Mobile.exe` đang bị khóa, đóng các cửa sổ client rồi build lại.
+Build Game Server trong Developer PowerShell:
 
-## Chạy đầy đủ trên Windows
+```powershell
+msbuild .\Sudoku.Server\Sudoku.Server.csproj /p:Configuration=Debug
+```
 
-Cần chạy đồng thời API, TCP Game Server và Mobile client.
+Build Windows client:
 
-### 1. Authentication API
+```powershell
+dotnet build .\Sudoku.Mobile\Sudoku.Mobile.csproj `
+    -f net10.0-windows10.0.19041.0
+```
 
-Mở PowerShell thứ nhất:
+## 8. Hướng dẫn chạy
+
+Chạy các lệnh từ thư mục chứa `UDM17-Sudoku.slnx`.
+
+### Bước 1 — Khởi động Authentication API
 
 ```powershell
 $env:ASPNETCORE_ENVIRONMENT = "Development"
@@ -111,24 +241,44 @@ dotnet run --project .\Sudoku.Api\Sudoku.Api.csproj --launch-profile http
 
 Kết quả mong đợi: `Now listening on: http://localhost:5243`.
 
-API tự áp dụng migration khi khởi động. Trong `Development`, API tạo hai tài khoản test nếu chưa tồn tại:
+Development tự tạo hai tài khoản nếu chưa tồn tại:
 
-| Player | Username | Password |
-|---|---|---|
-| Player A | `test_player_a` | `SudokuTest!2026` |
-| Player B | `test_player_b` | `SudokuTest!2026` |
+| Username | Password |
+|---|---|
+| `test_player_a` | `SudokuTest!2026` |
+| `test_player_b` | `SudokuTest!2026` |
 
-### 2. TCP Game Server
+### Bước 2 — Khởi động TCP Game Server
 
-Mở PowerShell thứ hai:
+`Sudoku.Server` là Windows Forms .NET Framework 4.7.2 nên không chạy bằng `dotnet run`. Trong Developer PowerShell:
 
 ```powershell
-dotnet run --project .\Sudoku.Server\Sudoku.Server.csproj
+msbuild .\Sudoku.Server\Sudoku.Server.csproj /p:Configuration=Debug
+& ".\Sudoku.Server\bin\Debug\Sudoku.Server.exe"
 ```
 
-Server mặc định lắng nghe tại `0.0.0.0:5000`.
+Hoặc mở `UDM17-Sudoku.slnx` bằng Visual Studio, chọn `Sudoku.Server` làm Startup Project và nhấn `Ctrl + F5`.
 
-Kiểm tra cả hai dịch vụ:
+### Bước 3 — Khởi động Client 1
+
+```powershell
+dotnet build .\Sudoku.Mobile\Sudoku.Mobile.csproj `
+    -f net10.0-windows10.0.19041.0
+
+& ".\Sudoku.Mobile\bin\Debug\net10.0-windows10.0.19041.0\win-x64\Sudoku.Mobile.exe"
+```
+
+Đăng nhập bằng tài khoản thứ nhất.
+
+### Bước 4 — Khởi động Client 2
+
+```powershell
+& ".\Sudoku.Mobile\bin\Debug\net10.0-windows10.0.19041.0\win-x64\Sudoku.Mobile.exe"
+```
+
+Đăng nhập bằng tài khoản khác.
+
+### Bước 5 — Kiểm tra kết nối
 
 ```powershell
 Get-NetTCPConnection -State Listen |
@@ -136,191 +286,123 @@ Get-NetTCPConnection -State Listen |
     Select-Object LocalAddress, LocalPort, OwningProcess
 ```
 
-### 3. Một Windows client
+Kết nối thành công khi API lắng nghe port `5243`, Game Server lắng nghe port `5000`, client đăng nhập và chuyển đến Lobby. Hai client sau đó có thể tạo/tham gia phòng, Quick Match hoặc challenge; khi cả hai sẵn sàng, trận đấu bắt đầu.
+
+### Bước 6 — Chạy automated testing
 
 ```powershell
-dotnet build .\Sudoku.Mobile\Sudoku.Mobile.csproj `
-    -f net10.0-windows10.0.19041.0
-
-& .\Sudoku.Mobile\bin\Debug\net10.0-windows10.0.19041.0\win-x64\Sudoku.Mobile.exe
+dotnet restore .\Sudoku.Server.Tests\Sudoku.Server.Tests.csproj
+dotnet test .\Sudoku.Server.Tests\Sudoku.Server.Tests.csproj `
+    --verbosity:normal
 ```
 
-## Chạy độc lập Player A và Player B
-
-Build Mobile một lần:
+Chạy không build lại:
 
 ```powershell
-dotnet build .\Sudoku.Mobile\Sudoku.Mobile.csproj `
-    -f net10.0-windows10.0.19041.0
+dotnet test .\Sudoku.Server.Tests\Sudoku.Server.Tests.csproj `
+    --no-build --verbosity:normal
+```
 
+Chạy một nhóm hoặc một test class:
+
+```powershell
+dotnet test .\Sudoku.Server.Tests\Sudoku.Server.Tests.csproj `
+    --filter "SudokuGeneratorTests|MatchCoordinatorTests|NetworkProtocolTests"
+
+dotnet test .\Sudoku.Server.Tests\Sudoku.Server.Tests.csproj `
+    --filter "FullyQualifiedName~SudokuGeneratorTests"
+```
+
+Xuất kết quả TRX:
+
+```powershell
+dotnet test .\Sudoku.Server.Tests\Sudoku.Server.Tests.csproj `
+    --logger "trx;LogFileName=automated-tests.trx" `
+    --results-directory .\TestResults
+```
+
+Test đạt khi kết quả có `failed: 0`. File báo cáo nằm tại `TestResults/automated-tests.trx`.
+
+### Bước 7 — Chạy integration và performance test
+
+API port `5243` phải chạy trước khi kiểm thử API; Game Server port `5000` phải chạy trước khi kiểm thử TCP.
+
+```powershell
+.\testing\api_execution.ps1
+.\testing\tcp_execution.ps1
+.\testing\load_execution.ps1
+.\testing\soak_execution_strict.ps1
+```
+
+Dữ liệu performance nằm tại `testing/performance/`; log cục bộ có thể nằm tại `.runlogs/`.
+
+### Chạy hai client tự động trong Debug
+
+```powershell
 $mobileExe = Resolve-Path `
     ".\Sudoku.Mobile\bin\Debug\net10.0-windows10.0.19041.0\win-x64\Sudoku.Mobile.exe"
-```
 
-Mở hai client và tự đăng nhập bằng tham số Debug:
-
-```powershell
 Start-Process -FilePath $mobileExe -ArgumentList "--dev-player=test_player_a"
 Start-Process -FilePath $mobileExe -ArgumentList "--dev-player=test_player_b"
 ```
 
-Cho hai client tự đăng nhập và vào Quick Match:
+Tự động đăng nhập và Quick Match:
 
 ```powershell
 Start-Process -FilePath $mobileExe `
     -ArgumentList "--dev-player=test_player_a", "--dev-quick-match"
-
 Start-Process -FilePath $mobileExe `
     -ArgumentList "--dev-player=test_player_b", "--dev-quick-match"
 ```
 
-Các tham số `--dev-*` chỉ hoạt động trong Debug build, không hoạt động trong Release/production.
+Tham số `--dev-*` chỉ hoạt động trong Debug build.
 
-Nếu test thủ công:
-
-1. Player A đăng nhập và tạo phòng hoặc bấm Quick Match.
-2. Player B đăng nhập và tham gia phòng hoặc bấm Quick Match.
-3. Khi cả hai sẵn sàng, server bắt đầu trận.
-4. Mỗi client hiển thị bảng của mình và bảng tiến độ đối thủ.
-
-## Chạy automated tests
-
-```powershell
-dotnet test .\Sudoku.Server.Tests\Sudoku.Server.Tests.csproj `
-    --no-restore `
-    --verbosity:quiet
-```
-
-Kết quả xác minh gần nhất:
-
-```text
-Passed: 60
-Failed: 0
-Skipped: 0
-```
-
-Chạy riêng nhóm board/multiplayer:
-
-```powershell
-dotnet test .\Sudoku.Server.Tests\Sudoku.Server.Tests.csproj `
-    --filter "SudokuBoardCoordinatesTests|MatchCoordinatorTests|NetworkProtocolTests"
-```
-
-## Kiểm tra nhanh Login API
-
-Sau khi API chạy:
-
-```powershell
-$loginBody = @{
-    UsernameOrEmail = "test_player_a"
-    Password = "SudokuTest!2026"
-} | ConvertTo-Json
-
-Invoke-RestMethod `
-    -Uri "http://127.0.0.1:5243/api/auth/login" `
-    -Method Post `
-    -ContentType "application/json" `
-    -Body $loginBody
-```
-
-Kết quả đúng:
-
-- Hợp lệ: HTTP `200` và có token.
-- Sai mật khẩu: HTTP `401`.
-- Tài khoản chưa kích hoạt: HTTP `403`.
-
-Không ghi access token, refresh token hoặc thông tin production vào log/ảnh chụp.
-
-## Chạy Android Emulator
-
-Android Emulator dùng `10.0.2.2` để truy cập máy host:
-
-```text
-Authentication API: http://10.0.2.2:5243
-TCP Game Server:     10.0.2.2:5000
-```
+### Chạy Android Emulator
 
 ```powershell
 dotnet build .\Sudoku.Mobile\Sudoku.Mobile.csproj -f net10.0-android
 dotnet build .\Sudoku.Mobile\Sudoku.Mobile.csproj -f net10.0-android -t:Run
 ```
 
-Với thiết bị thật hoặc server ở máy khác:
+Android Emulator dùng `10.0.2.2` để truy cập backend trên host.
 
-```powershell
-$env:SUDOKU_API_URL = "http://192.168.1.10:5243/"
-$env:SUDOKU_GAME_HOST = "192.168.1.10"
-$env:SUDOKU_GAME_PORT = "5000"
+## 9. Luồng hoạt động cơ bản
+
+```text
+Khởi động Authentication API và TCP Game Server
+                        ↓
+       Đăng ký + OTP hoặc đăng nhập
+                        ↓
+          TCP Handshake và vào Lobby
+                        ↓
+   Tạo/tham gia phòng, Quick Match hoặc challenge
+                        ↓
+             Hai người chơi sẵn sàng
+                        ↓
+                Trận đấu bắt đầu
+                        ↓
+  Server xác thực nước đi và đồng bộ tiến độ
+                        ↓
+  Hoàn thành bảng / hết giờ / mất kết nối
+                        ↓
+       Hiển thị Victory hoặc Defeat
+                        ↓
+          Quay lại Lobby / xem lịch sử
 ```
 
-Thay IP bằng LAN IP của backend và cho phép port `5243`, `5000` qua firewall.
+Spectator có thể theo dõi trạng thái hai bảng của trận đang diễn ra nhưng không được gửi nước đi thay cho người chơi.
 
-## Biến môi trường
+## 10. Kiểm thử
 
-| Biến | Ví dụ | Ý nghĩa |
-|---|---|---|
-| `SUDOKU_API_URL` | `http://127.0.0.1:5243/` | URL Authentication API |
-| `SUDOKU_GAME_HOST` | `127.0.0.1` | Host TCP Game Server |
-| `SUDOKU_GAME_PORT` | `5000` | Port TCP Game Server |
-| `ASPNETCORE_ENVIRONMENT` | `Development` | Môi trường chạy API |
+Automated test nằm trong `Sudoku.Server.Tests/`, bao gồm kiểm tra phân loại lỗi API, tọa độ bảng, Sudoku generator, Match Coordinator, timing, giao thức TCP, challenge và spectator. Lệnh chạy chi tiết nằm trong mục **8. Hướng dẫn chạy**.
 
-## Xử lý lỗi thường gặp
+`testing/` chứa script kiểm thử API, TCP, gameplay, reconnect, heartbeat, disconnect, load, stress và soak. Một số script yêu cầu dịch vụ tương ứng đang chạy.
 
-### Login không kết nối được API
+| Nội dung | Vị trí |
+|---|---|
+| Test case và ghi chú lỗi | `testcase.md` |
+| Ghi nhận kiểm thử | `testing/test_done.md` |
+| Kết quả performance | `testing/performance/` |
+| Log chạy cục bộ | `.runlogs/` |
 
-```powershell
-Test-NetConnection 127.0.0.1 -Port 5243
-```
-
-Windows development dùng `http://127.0.0.1:5243`. MAUI dùng native `HttpClient`, nên CORS không phải nguyên nhân thông thường.
-
-### Login thành công nhưng không vào Lobby
-
-Login còn cần TCP Game Server:
-
-```powershell
-Test-NetConnection 127.0.0.1 -Port 5000
-```
-
-### Database không kết nối được
-
-- Kiểm tra SQL Server LocalDB đã cài và đang chạy.
-- Kiểm tra `ConnectionStrings:DefaultConnection`.
-- Không commit secret hoặc cấu hình production.
-
-### Quick Match không tìm thấy đối thủ
-
-- Dùng hai username khác nhau.
-- Hai client phải dùng cùng TCP host/port.
-- Đảm bảo cả hai TCP handshake thành công.
-- Client thứ hai phải tham gia trước khi client đầu tiên hết thời gian chờ.
-
-## Quy ước Sudoku Duel
-
-- Mỗi board có 9 hàng, 9 cột, 81 ô và chín vùng `3 × 3`.
-- Flat index: `index = row * 9 + column`.
-- Ô đề bài không được chỉnh sửa; ô người chơi nhập có thể sửa/xóa.
-- Bảng đối thủ chỉ đọc.
-- Hai player có cùng `MatchId`, cùng độ khó nhưng nhận hai puzzle khác nhau.
-- Kết quả thắng/thua do server xác định.
-
-## Kiểm tra trước khi commit
-
-```powershell
-git status --short
-dotnet build .\Sudoku.Api\Sudoku.Api.csproj --no-restore
-dotnet build .\Sudoku.Server\Sudoku.Server.csproj --no-restore
-dotnet build .\Sudoku.Mobile\Sudoku.Mobile.csproj `
-    -f net10.0-windows10.0.19041.0 `
-    --no-restore
-dotnet test .\Sudoku.Server.Tests\Sudoku.Server.Tests.csproj --no-restore
-```
-
-Stage source code nhưng loại trừ Markdown:
-
-```powershell
-git add -- Sudoku.Api Sudoku.Mobile Sudoku.Server Sudoku.Server.Tests Sudoku.Shared `
-    ':(exclude)**/*.md'
-```
-
-Không commit `bin/`, `obj/`, `TestResults/`, log, screenshot, folder thiết kế/reference, secret hoặc token. Lịch sử bug và retest được lưu cục bộ trong `testcase.md`.
+Không commit log chứa token, thông tin tài khoản hoặc dữ liệu nhạy cảm.
